@@ -5,6 +5,9 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
+../Core/Src/I2C.c \
+../Core/Src/ICM20602.c \
+../Core/Src/Quaternions.c \
 ../Core/Src/main.c \
 ../Core/Src/stm32f4xx_hal_msp.c \
 ../Core/Src/stm32f4xx_it.c \
@@ -13,6 +16,9 @@ C_SRCS += \
 ../Core/Src/system_stm32f4xx.c 
 
 OBJS += \
+./Core/Src/I2C.o \
+./Core/Src/ICM20602.o \
+./Core/Src/Quaternions.o \
 ./Core/Src/main.o \
 ./Core/Src/stm32f4xx_hal_msp.o \
 ./Core/Src/stm32f4xx_it.o \
@@ -21,6 +27,9 @@ OBJS += \
 ./Core/Src/system_stm32f4xx.o 
 
 C_DEPS += \
+./Core/Src/I2C.d \
+./Core/Src/ICM20602.d \
+./Core/Src/Quaternions.d \
 ./Core/Src/main.d \
 ./Core/Src/stm32f4xx_hal_msp.d \
 ./Core/Src/stm32f4xx_it.d \

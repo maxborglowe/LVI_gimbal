@@ -8,6 +8,8 @@
 #ifndef INC_ICM20602_H_
 #define INC_ICM20602_H_
 
+#include "I2C.h"
+
 #define REG_XG_OFFS_TC_H 0x04
 #define REG_XG_OFFS_TC_L 0x05
 #define REG_YG_OFFS_TC_H 0x07
@@ -73,6 +75,16 @@
 #define REG_YA_OFFSET_L 0x7B
 #define REG_ZA_OFFSET_H 0x7D
 #define REG_ZA_OFFSET_L 0x7E
+
+//SA0 = 0 --> Arbitrary address value. If two gyros are used,
+//also an address ending with SA0 = 1.
+#define ICM20602_ADDR 0b1101000<<1
+
+uint8_t FCHOICE_B, DLPF_CFG, SMPLRT_DIV;
+
+float Get_FS_SEL(uint8_t param);
+float Get_AFS_SEL(void);
+float Get_SampleRate(void);
 
 enum icm20602_gyro_dps{
 	ICM20602_GYRO_250_DPS = 0,

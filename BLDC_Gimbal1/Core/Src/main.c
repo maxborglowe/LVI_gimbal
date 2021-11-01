@@ -22,9 +22,13 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include <math.h>
 #include <string.h>
 #include <stdio.h>
 #include "ICM20602.h"
+#include "I2C.h"
+#include "Quaternions.h"
+//#include "Madgwick.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -42,20 +46,47 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+I2C_HandleTypeDef hi2c1;
+
+SPI_HandleTypeDef hspi1;
+
+UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
 I2C_HandleTypeDef hi2c1;
 UART_HandleTypeDef huart2;
 HAL_StatusTypeDef status;
 
-uint8_t buff[64]; //string buff for UART
-uint16_t gyro_x_data, gyro_y_data, gyro_z_data; //raw gyro data
+/*Quaternion vars*/
+//######################################
+float SEq_1 = 1.0f, SEq_2 = 0.0f, SEq_3 = 0.0f, SEq_4 = 0.0f;
+struct EulerAngles euler;
+float sampleDelay = 20.0f; //milliseconds
+//######################################
+
+/*IMU variables*/
+//######################################
+int16_t rot_x_raw, rot_y_raw, rot_z_raw;
+int16_t acc_x_raw, acc_y_raw, acc_z_raw;
+float rot_x, rot_y, rot_z;
+float acc_x, acc_y, acc_z;
+
+float roll, pitch, yaw;
+//######################################
+
+float sampleRate;
+
+uint16_t offset_x = 0, offset_y = 0, offset_z = 0;
+uint16_t temp = 0;
+uint8_t pwr1 = 0, pwr2 = 0, gyro_conf = 0, whoami = 0;
+
+float FS_SEL_divider, AFS_SEL;
+
+//wait variable for bypassing zero-values when calculating quaternion
+uint8_t i = 0;
 
 
-
-//SA0 = 0 --> Arbitrary address value. If two gyros are used,
-//also an address ending with SA0 = 1.
-static const uint8_t ICM20602_ADDR = 0b1101000<<1;
+uint8_t buff[256]; //string buff for UART
 
 /* USER CODE END PV */
 
@@ -64,21 +95,19 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART2_UART_Init(void);
 static void MX_I2C1_Init(void);
+static void MX_SPI1_Init(void);
 /* USER CODE BEGIN PFP */
-HAL_StatusTypeDef icm20602_write_config(uint8_t config);
-HAL_StatusTypeDef icm20602_write_i2c_if(uint8_t config);
-HAL_StatusTypeDef icm20602_write_user_ctrl(uint8_t config);
-HAL_StatusTypeDef icm20602_write_smplrt_div(uint8_t config);
 
-HAL_StatusTypeDef icm20602_read_gyro_offset(uint16_t *offset, uint8_t axis);
-HAL_StatusTypeDef icm20602_read_gyro(uint16_t *deg, uint8_t axis);
-HAL_StatusTypeDef icm20602_read_pwr_1(void);
-HAL_StatusTypeDef icm20602_write_pwr_1(uint8_t config);
-HAL_StatusTypeDef icm20602_read_pwr_2(void);
-HAL_StatusTypeDef icm20602_write_pwr_2(uint8_t config);
-HAL_StatusTypeDef icm20602_read_gyro_config(void);
-HAL_StatusTypeDef icm20602_write_gyro_config(uint8_t config);
-HAL_StatusTypeDef icm20602_read_whoami(void);
+
+/*
+ * Returns a value based on the FS_SEL_divider configuration.
+ * This is used to divide the raw gyro data.
+ * @param 0 = get divider, 1 = get dps
+ */
+
+
+
+
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -116,264 +145,105 @@ int main(void)
   MX_GPIO_Init();
   MX_USART2_UART_Init();
   MX_I2C1_Init();
+  MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
-  //reset the ICM20602
 
-	icm20602_write_pwr_1(0b10000000);
+  	//initialize ICM20602
+	i2c_write(ICM20602_ADDR, REG_PWR_MGMT_1, 0b10000000);
 	HAL_Delay(1000); //reset delay
-	icm20602_read_whoami();			//verify chip --> output 0x12
-	icm20602_write_pwr_1(0b00000001);	//set clock to internal PLL
-	icm20602_write_pwr_2(0b00111111);		//place accel and gyro in standby
-	icm20602_write_smplrt_div(0x07);
-	icm20602_write_user_ctrl(0x00);	//disable fifo
-	icm20602_write_i2c_if(0x00); 	//enable i2c
-	icm20602_write_config(0b00000001);
-	icm20602_write_gyro_config((0b00011000) | 0x02);
+	i2c_read_8(ICM20602_ADDR, REG_WHO_AM_I, &whoami);			//verify chip --> output 0x12 = 18
 
-	icm20602_write_pwr_2(0b00111000); //enable gyro disable accel
+	i2c_write(ICM20602_ADDR, REG_PWR_MGMT_1, 0b00000001);	//set clock to internal PLL
+	i2c_write(ICM20602_ADDR, REG_PWR_MGMT_2, 0b00);		//place accel and gyro in standby
+	i2c_write(ICM20602_ADDR, REG_SMPLRT_DIV, 0x07);
+	i2c_write(ICM20602_ADDR, REG_USER_CTRL, 0x00);	//disable fifo
+	i2c_write(ICM20602_ADDR, REG_I2C_IF, 0x00); 	//enable i2c
+	i2c_write(ICM20602_ADDR, REG_CONFIG, 0b00000001);
+	i2c_write(ICM20602_ADDR, REG_GYRO_CONFIG, (0b00011000));
+	i2c_write(ICM20602_ADDR, REG_ACCEL_CONFIG, 0b00011000);
+
+	i2c_write(ICM20602_ADDR, REG_PWR_MGMT_2, 0b00000000); //enable gyro and accel
+	i2c_write(ICM20602_ADDR, REG_XG_OFFS_USRL, 0b00000000);
+
+	i2c_read_8(ICM20602_ADDR, REG_PWR_MGMT_1, &pwr1);
+	i2c_read_8(ICM20602_ADDR, REG_PWR_MGMT_1, &pwr2);
+	i2c_read_8(ICM20602_ADDR, REG_GYRO_CONFIG, &gyro_conf);
+
+	FS_SEL_divider = Get_FS_SEL(0);
+	AFS_SEL = Get_AFS_SEL();
+
+	sampleRate = Get_SampleRate();
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  uint16_t rotation_x, rotation_y, rotation_z;
-	  uint16_t offset_x, offset_y, offset_z;
 
-	  icm20602_read_pwr_1();
-	  icm20602_read_pwr_2();
+	  //i2c_read_16(REG_TEMP_OUT_L, REG_TEMP_OUT_H, &temp);
+	  //temp = (float)temp/326.8 + 25;
 
-	  icm20602_read_gyro_config(); //set ±2000 dps, no self test
-	  icm20602_read_gyro(&rotation_x, ICM20602_GYRO_AXIS_X);
-	  icm20602_read_gyro(&rotation_y, ICM20602_GYRO_AXIS_Y);
-	  icm20602_read_gyro(&rotation_z, ICM20602_GYRO_AXIS_Z);
-
-	  rotation_x = (float)rotation_x/16.4;
-	  rotation_y = (float)rotation_y/16.4;
-	  rotation_z = (float)rotation_z/16.4;
 
 	  sprintf((char*)buff,
-			  "gyro x: %u˚, y: %u˚, z: %u˚ \r\n",
-			  rotation_x, rotation_y, rotation_z
-			  );
-
-	  //Output UART buffer (gyro data)
+	  	  			  "samplerate: %f\r\n",
+	  	  			  sampleRate
+	  	  			  );
 	  HAL_UART_Transmit(&huart2, buff, strlen((char*)buff), HAL_MAX_DELAY);
 
-	  icm20602_read_gyro_offset(&offset_x, ICM20602_GYRO_AXIS_X);
-	  icm20602_read_gyro_offset(&offset_y, ICM20602_GYRO_AXIS_Y);
-	  icm20602_read_gyro_offset(&offset_z, ICM20602_GYRO_AXIS_Z);
+	  i2c_read_16(ICM20602_ADDR, REG_ACCEL_XOUT_L, REG_ACCEL_XOUT_H, &acc_x_raw);
+	  i2c_read_16(ICM20602_ADDR, REG_ACCEL_YOUT_L, REG_ACCEL_YOUT_H, &acc_y_raw);
+	  i2c_read_16(ICM20602_ADDR, REG_ACCEL_ZOUT_L, REG_ACCEL_ZOUT_H, &acc_z_raw);
+
+	  i2c_read_16(ICM20602_ADDR, REG_GYRO_XOUT_L, REG_GYRO_XOUT_H, &rot_x_raw);
+	  i2c_read_16(ICM20602_ADDR, REG_GYRO_YOUT_L, REG_GYRO_YOUT_H, &rot_y_raw);
+	  i2c_read_16(ICM20602_ADDR, REG_GYRO_ZOUT_L, REG_GYRO_ZOUT_H, &rot_z_raw);
+
+	  rot_x = rot_x_raw/FS_SEL_divider;
+	  rot_y = rot_y_raw/FS_SEL_divider;
+	  rot_z = rot_z_raw/FS_SEL_divider;
+
+	  acc_x = acc_x_raw/AFS_SEL;
+	  acc_y = acc_y_raw/AFS_SEL;
+	  acc_z = acc_z_raw/AFS_SEL;
+
+
+	  if(i > 1){
+		  filterUpdate(rot_x, rot_y, rot_z, acc_x, acc_y, acc_z);
+	  }
+
+	  i++;
+
+	  euler = ToEulerAngles(SEq_1, SEq_2, SEq_3, SEq_4);
+
+	  roll = euler.x*180/M_PI;
+	  pitch = euler.y*180/M_PI;
+	  yaw = euler.z*180/M_PI;
+
+	  //imu_filter(acc_x, acc_y, acc_z, rot_x, rot_y, rot_z);
+	  //eulerAngles(q_est, &roll, &pitch, &yaw);
 
 	  sprintf((char*)buff,
-	  			  "gyro x: %u, y: %u, z: %u \r\n",
-	  			  offset_x, offset_y, offset_z
-	  			  );
+			  "gyroscope x: %f˚/s, y: %f˚/s, z: %f˚/s\r\n"
+			  "accelerometer x: %f m/s2, y: %f m/s2, z: %f m/s2\r\n"
+			  "q1: %f, q2: %f, q3: %f, q4: %f\r\n"
+			  "roll: %f, pitch: %f, yaw: %f",
+			  rot_x, rot_y, rot_z,
+			  acc_x, acc_y, acc_z,
+			  SEq_1, SEq_2, SEq_3, SEq_4,
+			  roll, pitch, yaw
+			  );
 
-	  	  //Output UART buffer (gyro data)
-	  	  HAL_UART_Transmit(&huart2, buff, strlen((char*)buff), HAL_MAX_DELAY);
-	  HAL_Delay(100);
+	  HAL_UART_Transmit(&huart2, buff, strlen((char*)buff), HAL_MAX_DELAY);
+
+
+
+	  HAL_Delay(sampleDelay);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
-}
-
-HAL_StatusTypeDef icm20602_write(uint8_t config, uint8_t reg){
-
-	status = HAL_I2C_Mem_Write(&hi2c1, (uint16_t)(ICM20602_ADDR), (uint16_t)(reg), 0x01, &config, 1, HAL_MAX_DELAY);
-	if(status != HAL_OK){
-		strcpy((char*)buff, "Error write");
-		return status;
-	}
-	return HAL_OK;
-}
-
-HAL_StatusTypeDef icm20602_write_config(uint8_t config){
-
-	status = HAL_I2C_Mem_Write(&hi2c1, (uint16_t)(ICM20602_ADDR), (uint16_t)(REG_CONFIG), 0x01, &config, 1, HAL_MAX_DELAY);
-	if(status != HAL_OK){
-		strcpy((char*)buff, "Error write REG_I2C_IF\r\n");
-		return status;
-	}
-	return HAL_OK;
-}
-
-HAL_StatusTypeDef icm20602_write_i2c_if(uint8_t config){
-
-	status = HAL_I2C_Mem_Write(&hi2c1, (uint16_t)(ICM20602_ADDR), (uint16_t)(REG_I2C_IF), 0x01, &config, 1, HAL_MAX_DELAY);
-	if(status != HAL_OK){
-		strcpy((char*)buff, "Error write REG_I2C_IF\r\n");
-		return status;
-	}
-	return HAL_OK;
-}
-
-HAL_StatusTypeDef icm20602_write_smplrt_div(uint8_t config){
-
-	status = HAL_I2C_Mem_Write(&hi2c1, (uint16_t)(ICM20602_ADDR), (uint16_t)(REG_SMPLRT_DIV), 0x01, &config, 1, HAL_MAX_DELAY);
-	if(status != HAL_OK){
-		strcpy((char*)buff, "Error write REG_I2C_IF\r\n");
-		return status;
-	}
-	return HAL_OK;
-}
-
-HAL_StatusTypeDef icm20602_write_user_ctrl(uint8_t config){
-
-	status = HAL_I2C_Mem_Write(&hi2c1, (uint16_t)(ICM20602_ADDR), (uint16_t)(REG_USER_CTRL), 0x01, &config, 1, HAL_MAX_DELAY);
-	if(status != HAL_OK){
-		strcpy((char*)buff, "Error write REG_I2C_IF\r\n");
-		return status;
-	}
-	return HAL_OK;
-}
-
-HAL_StatusTypeDef icm20602_write_pwr_1(uint8_t config){
-
-	status = HAL_I2C_Mem_Write(&hi2c1, (uint16_t)(ICM20602_ADDR), (uint16_t)(REG_PWR_MGMT_1), 0x01, &config, 1, HAL_MAX_DELAY);
-	if(status != HAL_OK){
-		strcpy((char*)buff, "Error write PWR_MGMT_1\r\n");
-		return status;
-	}
-	return HAL_OK;
-}
-
-
-HAL_StatusTypeDef icm20602_read_pwr_1(void){
-	uint8_t data;
-
-	status = HAL_I2C_Mem_Read(&hi2c1, (uint16_t)(ICM20602_ADDR | 0x01), (uint16_t)(REG_PWR_MGMT_1), 0x01, &data, 1, HAL_MAX_DELAY);
-	if(status != HAL_OK){
-		strcpy((char*)buff, "Error read PWR_MGMT_1\r\n");
-		return status;
-	}
-
-	sprintf((char*)buff,
-				  "power config: %u \r\n",
-				  data
-				  );
-
-	//Output UART buffer (gyro data)
-	HAL_UART_Transmit(&huart2, buff, strlen((char*)buff), HAL_MAX_DELAY);
-
-	return HAL_OK;
-}
-
-HAL_StatusTypeDef icm20602_write_pwr_2(uint8_t config){
-
-	status = HAL_I2C_Mem_Write(&hi2c1, (uint16_t)(ICM20602_ADDR), (uint16_t)(REG_PWR_MGMT_2), 0x01, &config, 1, HAL_MAX_DELAY);
-	if(status != HAL_OK){
-		strcpy((char*)buff, "Error write PWR_MGMT_2\r\n");
-		return status;
-	}
-	return HAL_OK;
-}
-
-
-HAL_StatusTypeDef icm20602_read_pwr_2(void){
-	uint8_t data;
-
-	status = HAL_I2C_Mem_Read(&hi2c1, (uint16_t)(ICM20602_ADDR | 0x01), (uint16_t)(REG_PWR_MGMT_2), 0x01, &data, 1, HAL_MAX_DELAY);
-	if(status != HAL_OK){
-		strcpy((char*)buff, "Error read PWR_MGMT_2\r\n");
-		return status;
-	}
-
-	sprintf((char*)buff,
-				  "power 2 config: %u \r\n",
-				  data
-				  );
-
-	//Output UART buffer (gyro data)
-	HAL_UART_Transmit(&huart2, buff, strlen((char*)buff), HAL_MAX_DELAY);
-
-	return HAL_OK;
-}
-
-
-/**
- * @param variable onto which angular value is declared
- * @param which axis to be measured --> 0 = x, 1 = y, 2 = z
- */
-HAL_StatusTypeDef icm20602_read_gyro(uint16_t *deg, uint8_t axis){
-	uint8_t data[2];
-
-	status = HAL_I2C_Mem_Read(&hi2c1, (uint16_t)(ICM20602_ADDR | 0x01), (uint16_t)(REG_GYRO_XOUT_H + 2*axis), 0x01, &(data[0]), 1, HAL_MAX_DELAY);
-	if(status != HAL_OK){
-		strcpy((char*)buff, "Error read GYRO_XOUT_H\r\n");
-		return status;
-	}
-	status = HAL_I2C_Mem_Read(&hi2c1, (uint16_t)(ICM20602_ADDR | 0x01), (uint16_t)(REG_GYRO_XOUT_L + 2*axis), 0x01, &(data[1]), 1, HAL_MAX_DELAY);
-		if(status != HAL_OK){
-			strcpy((char*)buff, "Error read GYRO_XOUT_L\r\n");
-			return status;
-		}
-
-	*deg = (data[0]<<8 | data[1]);
-	return HAL_OK;
-}
-
-HAL_StatusTypeDef icm20602_read_gyro_offset(uint16_t *offset, uint8_t axis){
-	uint8_t data[2];
-
-	status = HAL_I2C_Mem_Read(&hi2c1, (uint16_t)(ICM20602_ADDR | 0x01), (uint16_t)(REG_XG_OFFS_USRH + 2*axis), 0x01, &(data[0]), 1, HAL_MAX_DELAY);
-	if(status != HAL_OK){
-		strcpy((char*)buff, "Error read GYRO_XOUT_H\r\n");
-		return status;
-	}
-	status = HAL_I2C_Mem_Read(&hi2c1, (uint16_t)(ICM20602_ADDR | 0x01), (uint16_t)(REG_XG_OFFS_USRL + 2*axis), 0x01, &(data[1]), 1, HAL_MAX_DELAY);
-		if(status != HAL_OK){
-			strcpy((char*)buff, "Error read GYRO_XOUT_L\r\n");
-			return status;
-		}
-
-	*offset = (data[0]<<8 | data[1]);
-	return HAL_OK;
-}
-
-
-HAL_StatusTypeDef icm20602_read_whoami(void){
-	uint8_t data;
-
-	status = HAL_I2C_Mem_Read(&hi2c1, (uint16_t)(ICM20602_ADDR | 0x01), (uint16_t)(REG_WHO_AM_I), 0x01, &data, 1, HAL_MAX_DELAY);
-	if(status != HAL_OK){
-		strcpy((char*)buff, "Error read PWR_MGMT_1\r\n");
-		return status;
-	}
-	sprintf((char*)buff,
-				  "who am i response: %u \r\n",
-				  data
-				  );
-	HAL_UART_Transmit(&huart2, buff, strlen((char*)buff), HAL_MAX_DELAY);
-	return HAL_OK;
-}
-
-HAL_StatusTypeDef icm20602_read_gyro_config(void){
-	uint8_t data;
-
-	status = HAL_I2C_Mem_Read(&hi2c1, (uint16_t)(ICM20602_ADDR | 0x01), (uint16_t)(REG_GYRO_CONFIG), 0x01, &data, 1, HAL_MAX_DELAY);
-	if(status != HAL_OK){
-		strcpy((char*)buff, "Error read PWR_MGMT_1\r\n");
-		return status;
-	}
-	sprintf((char*)buff,
-				  "gyro config: %u \r\n",
-				  data
-				  );
-	HAL_UART_Transmit(&huart2, buff, strlen((char*)buff), HAL_MAX_DELAY);
-	return HAL_OK;
-}
-
-HAL_StatusTypeDef icm20602_write_gyro_config(uint8_t config){
-
-	status = HAL_I2C_Mem_Write(&hi2c1, (uint16_t)(ICM20602_ADDR), (uint16_t)(REG_GYRO_CONFIG), 0x01, &config, 1, HAL_MAX_DELAY);
-	if(status != HAL_OK){
-		strcpy((char*)buff, "Error write GYRO_CONFIG\r\n");
-		return status;
-	}
-
-	return HAL_OK;
 }
 
 /**
@@ -420,8 +290,6 @@ void SystemClock_Config(void)
   }
 }
 
-
-
 /**
   * @brief I2C1 Initialization Function
   * @param None
@@ -453,6 +321,44 @@ static void MX_I2C1_Init(void)
   /* USER CODE BEGIN I2C1_Init 2 */
 
   /* USER CODE END I2C1_Init 2 */
+
+}
+
+/**
+  * @brief SPI1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_SPI1_Init(void)
+{
+
+  /* USER CODE BEGIN SPI1_Init 0 */
+
+  /* USER CODE END SPI1_Init 0 */
+
+  /* USER CODE BEGIN SPI1_Init 1 */
+
+  /* USER CODE END SPI1_Init 1 */
+  /* SPI1 parameter configuration*/
+  hspi1.Instance = SPI1;
+  hspi1.Init.Mode = SPI_MODE_MASTER;
+  hspi1.Init.Direction = SPI_DIRECTION_2LINES;
+  hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
+  hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
+  hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
+  hspi1.Init.NSS = SPI_NSS_SOFT;
+  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_64;
+  hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
+  hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
+  hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
+  hspi1.Init.CRCPolynomial = 10;
+  if (HAL_SPI_Init(&hspi1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN SPI1_Init 2 */
+
+  /* USER CODE END SPI1_Init 2 */
 
 }
 
@@ -505,7 +411,7 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_RESET);
 
   /*Configure GPIO pin : B1_Pin */
   GPIO_InitStruct.Pin = B1_Pin;
@@ -513,12 +419,12 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(B1_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : LD2_Pin */
-  GPIO_InitStruct.Pin = LD2_Pin;
+  /*Configure GPIO pin : PB6 */
+  GPIO_InitStruct.Pin = GPIO_PIN_6;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(LD2_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
 }
 
