@@ -6,7 +6,11 @@
  */
 
 #include "ICM20602.h"
+#include "I2C.h"
 
+
+uint16_t temp = 0;
+uint8_t pwr1 = 0, pwr2 = 0, gyro_conf = 0, whoami = 0;
 
 float Get_FS_SEL(uint8_t param){
 	uint8_t read_conf;
@@ -121,3 +125,29 @@ float Get_SampleRate(void){
 	return 1000;
 }
 
+void icm20602_init(){
+	//initialize ICM20602
+		i2c_write(ICM20602_ADDR, REG_PWR_MGMT_1, 0b10000000);
+		HAL_Delay(1000); //reset delay
+		i2c_read_8(ICM20602_ADDR, REG_WHO_AM_I, &whoami);			//verify chip --> output 0x12 = 18
+
+		i2c_write(ICM20602_ADDR, REG_PWR_MGMT_1, 0b00000001);	//set clock to internal PLL
+		i2c_write(ICM20602_ADDR, REG_PWR_MGMT_2, 0b00);		//place accel and gyro in standby
+		i2c_write(ICM20602_ADDR, REG_SMPLRT_DIV, 0x07);
+		i2c_write(ICM20602_ADDR, REG_USER_CTRL, 0x00);	//disable fifo
+		i2c_write(ICM20602_ADDR, REG_I2C_IF, 0x00); 	//enable i2c
+		i2c_write(ICM20602_ADDR, REG_CONFIG, 0b00000001);
+		i2c_write(ICM20602_ADDR, REG_GYRO_CONFIG, (0b00011000));
+		i2c_write(ICM20602_ADDR, REG_ACCEL_CONFIG, 0b00011000);
+
+		i2c_write(ICM20602_ADDR, REG_PWR_MGMT_2, 0b00000000); //enable gyro and accel
+		i2c_write(ICM20602_ADDR, REG_XG_OFFS_USRL, 0b00000000);
+
+		i2c_read_8(ICM20602_ADDR, REG_PWR_MGMT_1, &pwr1);
+		i2c_read_8(ICM20602_ADDR, REG_PWR_MGMT_1, &pwr2);
+		i2c_read_8(ICM20602_ADDR, REG_GYRO_CONFIG, &gyro_conf);
+
+		FS_SEL_divider = Get_FS_SEL(0);
+		AFS_SEL = Get_AFS_SEL();
+		sampleRate = Get_SampleRate();
+}

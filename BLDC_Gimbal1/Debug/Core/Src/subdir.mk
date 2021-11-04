@@ -5,6 +5,8 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
+../Core/Src/AS5048A.c \
+../Core/Src/BMI270.c \
 ../Core/Src/I2C.c \
 ../Core/Src/ICM20602.c \
 ../Core/Src/Quaternions.c \
@@ -16,6 +18,8 @@ C_SRCS += \
 ../Core/Src/system_stm32f4xx.c 
 
 OBJS += \
+./Core/Src/AS5048A.o \
+./Core/Src/BMI270.o \
 ./Core/Src/I2C.o \
 ./Core/Src/ICM20602.o \
 ./Core/Src/Quaternions.o \
@@ -27,6 +31,8 @@ OBJS += \
 ./Core/Src/system_stm32f4xx.o 
 
 C_DEPS += \
+./Core/Src/AS5048A.d \
+./Core/Src/BMI270.d \
 ./Core/Src/I2C.d \
 ./Core/Src/ICM20602.d \
 ./Core/Src/Quaternions.d \

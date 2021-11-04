@@ -78,13 +78,15 @@
 
 //SA0 = 0 --> Arbitrary address value. If two gyros are used,
 //also an address ending with SA0 = 1.
-#define ICM20602_ADDR 0b1101000<<1
+#define ICM20602_ADDR 0b1101000<<1 //7-bit
 
 uint8_t FCHOICE_B, DLPF_CFG, SMPLRT_DIV;
+float FS_SEL_divider, AFS_SEL, sampleRate;
 
 float Get_FS_SEL(uint8_t param);
 float Get_AFS_SEL(void);
 float Get_SampleRate(void);
+void icm20602_init(void);
 
 enum icm20602_gyro_dps{
 	ICM20602_GYRO_250_DPS = 0,

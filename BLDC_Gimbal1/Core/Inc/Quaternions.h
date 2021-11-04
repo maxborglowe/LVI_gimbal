@@ -17,6 +17,7 @@
 
 extern float SEq_1, SEq_2, SEq_3, SEq_4;
 extern float sampleDelay;
+extern
 
 #define dt 1/sampleDelay //has to be changed according to the sample rate of the IMU
 #define g_dps 2000.0f
@@ -33,7 +34,5 @@ struct EulerAngles{
 void filterUpdate(float w_x, float w_y, float w_z, float a_x, float a_y, float a_z);
 struct EulerAngles ToEulerAngles(float q1, float q2, float q3, float q4);
 float invSqrt(float x);
-
-
 
 #endif /* INC_QUATERNIONS_H_ */

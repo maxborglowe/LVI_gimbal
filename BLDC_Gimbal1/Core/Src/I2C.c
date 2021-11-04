@@ -14,7 +14,7 @@
  * @param this is what is written into the chosen 8-bit register
  */
 HAL_StatusTypeDef i2c_write(uint8_t ADDR, uint8_t reg, uint8_t config){
-	status = HAL_I2C_Mem_Write(&hi2c1, (uint16_t)(ADDR), (uint16_t)(reg), 0x01, &config, 1, HAL_MAX_DELAY);
+	status = HAL_I2C_Mem_Write(&hi2c1, (uint16_t)ADDR, (uint16_t)(reg), 0x01, &config, 1, 200);
 	if(status != HAL_OK){
 		return status;
 	}
@@ -30,7 +30,7 @@ HAL_StatusTypeDef i2c_write(uint8_t ADDR, uint8_t reg, uint8_t config){
 HAL_StatusTypeDef i2c_read_8(uint8_t ADDR, uint8_t reg, uint8_t *read_var){
 	uint8_t data;
 
-	status = HAL_I2C_Mem_Read(&hi2c1, (uint16_t)(ADDR | 0x01), (uint16_t)(reg), 0x01, &data, 1, HAL_MAX_DELAY);
+	status = HAL_I2C_Mem_Read(&hi2c1, (uint16_t)(ADDR | 0x01), (uint16_t)(reg), 0x01, &data, 1, 200);
 	if(status != HAL_OK){
 		return status;
 	}
@@ -49,12 +49,12 @@ HAL_StatusTypeDef i2c_read_8(uint8_t ADDR, uint8_t reg, uint8_t *read_var){
 HAL_StatusTypeDef i2c_read_16(uint8_t ADDR, uint8_t lo_reg, uint8_t hi_reg, int16_t *read_var){
 	uint8_t data[2];
 
-	status = HAL_I2C_Mem_Read(&hi2c1, (uint16_t)(ADDR | 0x01), (uint16_t)(lo_reg), 0x01, &(data[0]), 1, HAL_MAX_DELAY);
+	status = HAL_I2C_Mem_Read(&hi2c1, (uint16_t)(ADDR | 0x01), (uint16_t)(lo_reg), 0x01, &(data[0]), 1, 200);
 	if(status != HAL_OK){
 		return status;
 	}
 
-	status = HAL_I2C_Mem_Read(&hi2c1, (uint16_t)(ADDR | 0x01), (uint16_t)(hi_reg), 0x01, &(data[1]), 1, HAL_MAX_DELAY);
+	status = HAL_I2C_Mem_Read(&hi2c1, (uint16_t)(ADDR | 0x01), (uint16_t)(hi_reg), 0x01, &(data[1]), 1, 200);
 	if(status != HAL_OK){
 		return status;
 	}

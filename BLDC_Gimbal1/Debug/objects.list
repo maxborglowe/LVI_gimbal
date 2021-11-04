@@ -1,3 +1,5 @@
+"./Core/Src/AS5048A.o"
+"./Core/Src/BMI270.o"
 "./Core/Src/I2C.o"
 "./Core/Src/ICM20602.o"
 "./Core/Src/Quaternions.o"
