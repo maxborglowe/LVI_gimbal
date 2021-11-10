@@ -8,10 +8,7 @@
 #ifndef INC_BMI270_H_
 #define INC_BMI270_H_
 
-
 #include "stm32f4xx_hal.h"
-
-
 
 //Default address. If this address is used, SDO must be pulled to GND.
 #define BMI270_ADDR 0b1101000<<1
@@ -24,11 +21,9 @@
 #define REG_INIT_DATA 0x5E
 #define REG_PWR_CONF 0x7C
 
-extern uint8_t buff[256];
+extern uint8_t buff[512];
 extern UART_HandleTypeDef huart2;
 
 void bmi270_init(void);
-
-
 
 #endif /* INC_BMI270_H_ */

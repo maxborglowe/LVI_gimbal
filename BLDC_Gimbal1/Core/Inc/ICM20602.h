@@ -88,17 +88,15 @@ float Get_AFS_SEL(void);
 float Get_SampleRate(void);
 void icm20602_init(void);
 
-enum icm20602_gyro_dps{
+enum icm20602_gyro_dps {
 	ICM20602_GYRO_250_DPS = 0,
 	ICM20602_GYRO_500_DPS = 1,
 	ICM20602_GYRO_1000_DPS = 2,
 	ICM20602_GYRO_2000_DPS = 3
 };
 
-enum icm206_gyro_axis{
-	ICM20602_GYRO_AXIS_X = 0,
-	ICM20602_GYRO_AXIS_Y = 1,
-	ICM20602_GYRO_AXIS_Z = 2
+enum icm206_gyro_axis {
+	ICM20602_GYRO_AXIS_X = 0, ICM20602_GYRO_AXIS_Y = 1, ICM20602_GYRO_AXIS_Z = 2
 };
 
 #endif /* INC_ICM20602_H_ */
