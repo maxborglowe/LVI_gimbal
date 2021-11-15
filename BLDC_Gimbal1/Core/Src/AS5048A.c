@@ -115,7 +115,7 @@ uint8_t calcEvenParity(uint16_t value) {
 /*
  * @brief Fetches current angle on each encoder.
  */
-void getAllAngles() {
+void as5048a_getAllAngles() {
 	for (uint8_t c = 0; c < amt_encoders; c++) {
 		curr_angle[c] = as5048a_getRawRotation(GPIO_ENC_X << c);
 		curr_angle_map[c] = as5048a_readToAngle(curr_angle[c]);
@@ -126,7 +126,7 @@ void getAllAngles() {
 		const char *enc = getEncoderName(c);
 
 		sprintf((char*) buff, "zero pos %s: %f\r\n"
-				"encoder: %.3f\r\n", enc, zero_pos_map[c], angle[c]);
+				"encoder %s: %.3f\r\n", enc, zero_pos_map[c], enc, angle[c]);
 		HAL_UART_Transmit(&huart2, buff, strlen((char*) buff), 100);
 	}
 }

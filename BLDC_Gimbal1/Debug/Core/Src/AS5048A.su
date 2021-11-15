@@ -5,5 +5,5 @@ AS5048A.c:75:7:as5048a_normalize	16	static
 AS5048A.c:90:6:as5048a_setZero	16	static
 AS5048A.c:98:7:as5048a_readToAngle	16	static
 AS5048A.c:102:9:calcEvenParity	24	static
-AS5048A.c:118:6:getAllAngles	40	static
+AS5048A.c:118:6:as5048a_getAllAngles	48	static
 AS5048A.c:138:13:getEncoderName	16	static

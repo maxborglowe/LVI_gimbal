@@ -693,28 +693,240 @@ uint8_t bmi270_config_file[] = { 0xc8, 0x2e, 0x00, 0x2e, 0x80, 0x2e, 0x3d, 0xb1,
 		0x80, 0x2e, 0x00, 0xc1, 0x80, 0x2e, 0x00, 0xc1, 0x80, 0x2e, 0x00, 0xc1,
 		0x80, 0x2e, 0x00, 0xc1, 0x80, 0x2e, 0x00, 0xc1, 0x80, 0x2e, 0x00, 0xc1 };
 
-uint16_t config_size = sizeof(bmi270_config_file);
+uint16_t bmi270_config_size = sizeof(bmi270_config_file);
 
-void bmi270_init() {
-	uint8_t read_var = 0;
+uint16_t factor_zx_div = 512; //2^9
+
+void bmi270_i2c_init() {
+	uint8_t read_var;
+
+//	i2c_master_read(BMI270_ADDR, REG_CHIP_ID, &read_var, 1);
+	i2c_write(BMI270_ADDR, REG_CHIP_ID, 0x24);
+
 	i2c_read_8(BMI270_ADDR, REG_CHIP_ID, &read_var);
 
-	sprintf((char*) buff, "CHIP_LOL: %u\r\n", read_var);
-	HAL_UART_Transmit(&huart2, buff, strlen((char*) buff), HAL_MAX_DELAY);
+	sprintf((char*) buff, "CHIP_ID: %u\r\n", read_var);
+	HAL_UART_Transmit(&huart2, buff, strlen((char*) buff), 200);
 
 	if (read_var != CHIP_ID) {
-		return 0;
+		bmi270_print(0);
 	}
 
-	i2c_write(BMI270_ADDR, REG_PWR_CONF, 0x00);
-	HAL_Delay(5); //delay > 450us
-	i2c_write(BMI270_ADDR, REG_INIT_CTRL, 0x00);
+}
 
-	for (uint32_t c = 0; c < config_size; c++) {
-		i2c_write(BMI270_ADDR, REG_INIT_DATA, bmi270_config_file[c]);
+/*
+ * @brief Initialization sequence for BMI270 as described on p. 20 in datasheet.
+ */
+void bmi270_spi_init() {
+	uint8_t chip_id = 0;
+
+	HAL_GPIO_WritePin(GPIOB, BMI270_CS, GPIO_PIN_SET);
+
+	chip_id = bmi270_spi_read_8(0x00);
+	if (chip_id != 0x24) {
+		bmi270_print(0x0000);
+
+	} else if (chip_id == 0x24) {
+		bmi270_print(0xFF00);
+
+		bmi270_spi_write_8(REG_PWR_CONF, 0x00); //Disable PWR_CONF.adv_power_save
+		HAL_Delay(1);								//wait for 450us
+		bmi270_spi_write_8(REG_INIT_CTRL, 0x00); //prepare config load INIT_CTRL = 0x00
+		bmi270_spi_write_burst(REG_INIT_DATA, bmi270_config_file,
+				bmi270_config_size); //burst write to reg INIT_DATA. Start with byte 0.
+		bmi270_spi_write_8(REG_INIT_CTRL, 0x01);//complete config load INIT_CTRL = 0x01
+
+		sprintf((char*) buff, "BMI270: initialization sequence complete\r\n");
+		HAL_UART_Transmit(&huart2, buff, strlen((char*) buff), 200);
 	}
-	i2c_write(BMI270_ADDR, REG_INIT_CTRL, 0x01);
+}
 
-//	return 1;
+/*
+ *@brief Set power mode for the BMI270
+ *@param Power mode:
+ *			0 = low power mode
+ *			1 = normal power mode
+ *			2 = performance power mode
+ */
+void bmi270_pwr_conf(uint8_t pwr_mode) {
+	if (pwr_mode == BMI270_PWR_MODE_LOW) {
+		bmi270_spi_write_8(REG_PWR_CTRL, 0x04); //enable acquisiton of acceleration data. disable the auxiliary interface, gyroscope data, temperature sensor data
+		bmi270_spi_write_8(REG_ACC_CONF, 0x17); //disable the acc_filter_perf bit; set acc_bwp to 2 repetitions; set acc_odr to 50 Hz
+		bmi270_spi_write_8(REG_PWR_CONF, 0x03); //enable the adv_power_save bit; leave the fifo_self_wakeup enabled
+	} else if (pwr_mode == BMI270_PWR_MODE_NORM) {
+		bmi270_spi_write_8(REG_PWR_CTRL, 0x0E); //enable acquisiton of acceleration, gyroscope and temperature sensor data. disable the auxiliary interface.
+		bmi270_spi_write_8(REG_ACC_CONF, 0xA8); //enable the acc_filter_perf bit; set acc_bwp to normal mode; set acc_odr to 100 Hz
+		bmi270_spi_write_8(REG_GYR_CONF, 0xA9); //enable the gyr_filter_perf bit; set gyr_bwp to normal mode; set gyr_odr to 200 Hz
+		bmi270_spi_write_8(REG_PWR_CONF, 0x02); //disable the adv_power_save bit; leave the fifo_self_wakeup enabled
+	} else if (pwr_mode == BMI270_PWR_MODE_PERF) {
+		bmi270_spi_write_8(REG_PWR_CTRL, 0x0E); //enable acquisiton of acceleration, gyroscope and temperature sensor data. disable the auxiliary interface.
+		bmi270_spi_write_8(REG_ACC_CONF, 0xA8); //enable the acc_filter_perf bit; set acc_bwp to normal mode; set acc_odr to 100 Hz
+		bmi270_spi_write_8(REG_GYR_CONF, 0xE9); //enable the gyr_filter_perf bit; enable gyr_noise_perf bit; set gyr_bwp to normal mode; set gyr_odr to 200 Hz
+		bmi270_spi_write_8(REG_PWR_CONF, 0x02); //disable the adv_power_save bit; leave the fifo_self_wakeup enabled
+	}
+}
+
+/*
+ * @brief Read 2 bytes of gyroscope data in dps from the BMI270
+ * @param Which axis to read
+ */
+uint16_t bmi270_read_gyro(uint8_t axis){
+	uint16_t data;
+
+	data = bmi270_spi_read_8(2 * axis + REG_DATA_14);
+	data |= bmi270_spi_read_8(2 * axis + REG_DATA_14 + 1)<<8;
+
+	if(axis == BMI270_AXIS_X){
+		uint16_t data_z = (bmi270_spi_read_8(REG_DATA_19)<<8 | bmi270_spi_read_8(REG_DATA_18));
+		uint8_t factor_zx = (bmi270_spi_read_8(REG_GYR_CAS) & 0x3F);
+		data = data - factor_zx * data_z / factor_zx_div;
+	}
+
+	return data;
+}
+
+/*
+ * @brief Read 2 bytes of accelerometer data in dps from the BMI270
+ * @param Which axis to read
+ */
+uint16_t bmi270_read_accel(uint8_t axis){
+	uint16_t data;
+
+	data = bmi270_spi_read_8(2 * axis + REG_DATA_8);
+	data |= (bmi270_spi_read_8(2 * axis + REG_DATA_8 + 1)<<8);
+
+	return data;
+}
+
+/*
+ * @brief Check the correct initialization status as described on p.21 in datasheet.
+ */
+void bmi270_spi_init_check() {
+	HAL_Delay(200); //wait >140 ms
+	uint16_t init_status = bmi270_spi_read_8(REG_INTERNAL_STATUS);
+	init_status = init_status & 0x0F;
+	init_status = init_status | 0xC000;
+
+	bmi270_print(init_status);
+}
+
+/*
+ * @brief Writes 8 bits of data to SDI -pin on BMI270.
+ * @param Which BMI270-register to perform the read on
+ * @param 8-bit data to be written into the selected register
+ */
+void bmi270_spi_write_8(uint8_t reg, uint8_t data) {
+	uint8_t cmd = reg | 0x00; //write command
+
+	HAL_GPIO_WritePin(GPIOB, BMI270_CS, GPIO_PIN_RESET);
+	HAL_SPI_Transmit(&hspi1, (uint8_t*) &cmd, 1, 0xFFFF);
+	HAL_SPI_Transmit(&hspi1, (uint8_t*) &data, 1, 0xFFFF);
+	HAL_GPIO_WritePin(GPIOB, BMI270_CS, GPIO_PIN_SET);
+}
+
+/*
+ * @brief Writes burst of 8-bit array to SDI-pin on BMI270.
+ * @param Which BMI270-register to perform the read on
+ * @param Array to be written into the selected register
+ * @param Size of passing array (pre-defined)
+ */
+void bmi270_spi_write_burst(uint8_t reg, uint8_t data[], uint16_t data_size) {
+	uint8_t cmd = reg | 0x00; //write command
+	uint16_t i;
+
+	HAL_GPIO_WritePin(GPIOB, BMI270_CS, GPIO_PIN_RESET);
+	HAL_SPI_Transmit(&hspi1, (uint8_t*) &cmd, 1, 0xFFFF);
+	for (i = 0; i < data_size; i++) {
+		HAL_SPI_Transmit(&hspi1, (uint8_t*) &data[i], 1, 0xFFFF);
+	}
+	HAL_GPIO_WritePin(GPIOB, BMI270_CS, GPIO_PIN_SET);
+}
+
+/*
+ * @brief Read 8 bits of data from SDO-pin on BMI270.
+ * @param Which BMI270-register to perform the read on
+ */
+uint8_t bmi270_spi_read_8(uint8_t reg) {
+	uint8_t dummy = 0x00;
+	uint8_t data = 0x00;
+	uint8_t cmd = reg | 0x80;
+
+	HAL_GPIO_WritePin(GPIOB, BMI270_CS, GPIO_PIN_RESET);
+	HAL_SPI_Transmit(&hspi1, (uint8_t*) &cmd, 1, 0xFFFF);
+	HAL_SPI_Receive(&hspi1, (uint8_t*) &dummy, 1, 0xFFFF);
+	HAL_SPI_Receive(&hspi1, (uint8_t*) &data, 1, 0xFFFF);
+	HAL_GPIO_WritePin(GPIOB, BMI270_CS, GPIO_PIN_SET);
+
+	return data;
+}
+
+float bmi270_getGyroRange(){
+	uint8_t gyr_range = bmi270_spi_read_8(REG_GYR_RANGE);
+	switch(gyr_range){
+	case range_2000:
+		return BMI270_GYRO_2000_DPS;
+	case range_1000:
+		return BMI270_GYRO_1000_DPS;
+	case range_500:
+		return BMI270_GYRO_500_DPS;
+	case range_250:
+		return BMI270_GYRO_250_DPS;
+	case range_125:
+		return BMI270_GYRO_125_DPS;
+	}
+}
+
+/*!
+ * @brief This function converts lsb to degree per second for 16 bit gyro at
+ * range 125, 250, 500, 1000 or 2000dps.
+ */
+float bmi270_lsb_to_dps(int16_t val, float dps){
+	float half_scale = ((float)(1 << 16) / 2.0f);
+	return (dps / ((half_scale) + BMI270_GYRO_2000_DPS)) * (val);
+}
+
+void bmi270_print(uint16_t code) {
+	if ((uint16_t*) code != NULL) {
+		sprintf((char*) buff, "BMI270: %s\r\n", bmi270_codeToStr(code));
+	}
+
+	HAL_UART_Transmit(&huart2, buff, strlen((char*) buff), 200);
+}
+
+const char* bmi270_codeToStr(uint16_t code) {
+
+	//error codes
+	switch (code) {
+	case 0x0000:
+		return "CHIP_ID error";
+	case 0x0001:
+		return "Initialization error";
+	case 0x0002:
+		return "";
+
+		//REG_INTERNAL_STATUS codes
+	case 0xc000:
+		return "REG_INTERNAL_STATUS: not_init";
+	case 0xc001:
+		return "REG_INTERNAL_STATUS: init_ok";
+	case 0xc002:
+		return "REG_INTERNAL_STATUS: init_err";
+	case 0xc003:
+		return "REG_INTERNAL_STATUS: drv_error";
+	case 0xc004:
+		return "REG_INTERNAL_STATUS: sns_stop";
+	case 0xc005:
+		return "REG_INTERNAL_STATUS: nvm_error";
+	case 0xc006:
+		return "REG_INTERNAL_STATUS: start_up_error";
+	case 0xc007:
+		return "REG_INTERNAL_STATUS: compat_error";
+
+		//other codes
+	case 0xFF00:
+		return "CHIP_ID == 0x24";
+	case 0xFF01:
+		return "Initialization sequence OK!";
+	}
 }
 

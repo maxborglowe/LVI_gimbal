@@ -36,7 +36,7 @@ float angle[amt_encoders];
 
 void as5048a_setZero(uint16_t arg_pos, uint8_t axis);
 void as5048a_init(void);
-void getAllAngles(void);
+void as5048a_getAllAngles(void);
 int as5048a_getRotation(uint16_t ss);
 float as5048a_readToAngle(uint16_t angle);
 float as5048a_normalize(float angle);

@@ -78,7 +78,7 @@
 
 //SA0 = 0 --> Arbitrary address value. If two gyros are used,
 //also an address ending with SA0 = 1.
-#define ICM20602_ADDR 0b1101000<<1 //7-bit
+#define ICM20602_ADDR 0b1101000 //7-bit
 
 uint8_t FCHOICE_B, DLPF_CFG, SMPLRT_DIV;
 float FS_SEL_divider, AFS_SEL, sampleRate;

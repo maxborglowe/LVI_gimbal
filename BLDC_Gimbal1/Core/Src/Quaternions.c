@@ -11,8 +11,8 @@
 /*
  * @brief Set the sample frequency based on the while loop cycle time (in milliseconds)
  */
-void setSampleFreq(){
-	sampleFreq = 1/(0.001*while_t);
+void setSampleFreq() {
+	sampleFreq = 1 / (0.001 * while_t);
 }
 
 /*
@@ -107,7 +107,8 @@ struct EulerAngles ToEulerAngles(float _q0, float _q1, float _q2, float _q3) {
 	struct EulerAngles angles;
 
 	// roll (x-axis rotation)
-	angles.x = atan2(2 * (_q0 * _q1 + _q2 * _q3), 1 - 2 * (_q1 * _q1 + _q2 * _q2));
+	angles.x = atan2(2 * (_q0 * _q1 + _q2 * _q3),
+			1 - 2 * (_q1 * _q1 + _q2 * _q2));
 
 	// pitch (y-axis rotation)
 	double sinp = 2 * (_q0 * _q2 - _q3 * _q1);
@@ -117,8 +118,8 @@ struct EulerAngles ToEulerAngles(float _q0, float _q1, float _q2, float _q3) {
 		angles.y = asin(sinp);
 
 	// yaw (z-axis rotation)
-	angles.z = atan2(2 * (_q0 * _q3 + _q1 * _q2), 1 - 2 * (_q2 * _q2 + _q3 * _q3));
-
+	angles.z = atan2(2 * (_q0 * _q3 + _q1 * _q2),
+			1 - 2 * (_q2 * _q2 + _q3 * _q3));
 
 	return angles;
 }

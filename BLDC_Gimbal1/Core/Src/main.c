@@ -60,19 +60,26 @@ I2C_HandleTypeDef hi2c1;
 UART_HandleTypeDef huart2;
 HAL_StatusTypeDef status;
 
-/*GPIO aliases*/
+/*Configuration vars
+ * Set these to configure what is read, written, printed, etc. in the while loop*/
 //######################################
+#define USE_SIM 0
+#define USE_ICM20602 0
+#define USE_BMI270 1
+#define USE_ENCODERS 0
+
 //######################################
+
 /*Quaternion vars*/
 //######################################
 float SEq_1 = 1.0f, SEq_2 = 0.0f, SEq_3 = 0.0f, SEq_4 = 0.0f;
 volatile float q0 = 1.0f, q1 = 0.0f, q2 = 0.0f, q3 = 0.0f;
 struct EulerAngles euler;
-float sampleDelay = 50.0f; //milliseconds
+float sampleDelay = 200.0f; //milliseconds
 
 clock_t t1;
 clock_t t2;
-float while_t = 74.0f;
+float while_t = 226.0f;
 
 #define DEG_TO_RAD 0.01745329251
 #define RAD_TO_DEG 57.2957795457
@@ -80,16 +87,18 @@ float while_t = 74.0f;
 
 /*IMU variables*/
 //######################################
-int16_t rot_x_raw, rot_y_raw, rot_z_raw;
+float gyr_range;
+
+int16_t gyr_x_raw, gyr_y_raw, gyr_z_raw;
 int16_t acc_x_raw, acc_y_raw, acc_z_raw;
-float rot_x, rot_y, rot_z;
+float gyr_x, gyr_y, gyr_z;
 float acc_x, acc_y, acc_z;
 
 float roll, pitch, yaw;
 
 uint16_t offset_x = 0, offset_y = 0, offset_z = 0;
 
-uint8_t chip_id;
+uint8_t chip_id = 0;
 //######################################
 
 /*Encoder vars*/
@@ -105,7 +114,6 @@ float angle[amt_encoders];
 /*Simulation vars*/
 //######################################
 float ax_s = 0, ay_s = 0, az_s = 0, gx_s = 0, gy_s = 0, gz_s = 0;
-uint8_t sim_ena = 1;
 uint8_t zero_c = 0;
 //######################################
 
@@ -163,10 +171,23 @@ int main(void) {
 	MX_I2C1_Init();
 	/* USER CODE BEGIN 2 */
 
-	icm20602_init();
-	//i2c_read_8(BMI270_ADDR, REG_CHIP_ID, &chip_id);
+	sprintf((char*) buff, "\r\n###########################\r\n");
+	HAL_UART_Transmit(&huart2, buff, strlen((char*) buff), HAL_MAX_DELAY);
+
+	if (USE_ICM20602) {
+		icm20602_init();
+	}
 
 	as5048a_init();
+
+	gyr_range = bmi270_getGyroRange();
+
+	if (USE_BMI270) {
+		bmi270_spi_init();
+		bmi270_spi_init_check();
+
+		bmi270_pwr_conf(BMI270_PWR_MODE_PERF);
+	}
 
 	//Set zero position for all encoders
 	zero_pos[ENC_X] = as5048a_getRawRotation(GPIO_ENC_X);
@@ -185,45 +206,52 @@ int main(void) {
 		t1 = HAL_GetTick();
 		setSampleFreq();
 
-		if (!sim_ena) {
-			for (uint8_t c = 0; c < amt_encoders; c++) {
-				curr_angle[c] = as5048a_getRawRotation(GPIO_ENC_X << c);
-				curr_angle_map[c] = as5048a_readToAngle(curr_angle[c]);
+		if (USE_ENCODERS) {
+			as5048a_getAllAngles();
+		}
 
-				angle[c] = curr_angle_map[c] - zero_pos_map[c];
-				angle[c] = as5048a_normalize(angle[c]);
+		if(USE_ICM20602){
+			i2c_read_16(ICM20602_ADDR, REG_ACCEL_XOUT_L, REG_ACCEL_XOUT_H,
+					&acc_x_raw);
+			i2c_read_16(ICM20602_ADDR, REG_ACCEL_YOUT_L, REG_ACCEL_YOUT_H,
+					&acc_y_raw);
+			i2c_read_16(ICM20602_ADDR, REG_ACCEL_ZOUT_L, REG_ACCEL_ZOUT_H,
+					&acc_z_raw);
 
-				const char *enc = getEncoderName(c);
+			i2c_read_16(ICM20602_ADDR, REG_GYRO_XOUT_L, REG_GYRO_XOUT_H,
+					&gyr_x_raw);
+			i2c_read_16(ICM20602_ADDR, REG_GYRO_YOUT_L, REG_GYRO_YOUT_H,
+					&gyr_y_raw);
+			i2c_read_16(ICM20602_ADDR, REG_GYRO_ZOUT_L, REG_GYRO_ZOUT_H,
+					&gyr_z_raw);
 
-				sprintf((char*) buff, "zero pos %s: %f\r\n"
-						"encoder: %f\r\n", enc, zero_pos_map[c], angle[c]);
-				HAL_UART_Transmit(&huart2, buff, strlen((char*) buff),
-						HAL_MAX_DELAY);
-			}
+			gyr_x = gyr_x_raw / FS_SEL_divider;
+			gyr_y = gyr_y_raw / FS_SEL_divider;
+			gyr_z = gyr_z_raw / FS_SEL_divider;
 
-			i2c_read_16(ICM20602_ADDR, REG_ACCEL_XOUT_L, REG_ACCEL_XOUT_H, &acc_x_raw);
-			i2c_read_16(ICM20602_ADDR, REG_ACCEL_YOUT_L, REG_ACCEL_YOUT_H, &acc_y_raw);
-			i2c_read_16(ICM20602_ADDR, REG_ACCEL_ZOUT_L, REG_ACCEL_ZOUT_H, &acc_z_raw);
+			acc_x = acc_x_raw / AFS_SEL;
+			acc_y = acc_y_raw / AFS_SEL;
+			acc_z = acc_z_raw / AFS_SEL;
+		}
 
-			i2c_read_16(ICM20602_ADDR, REG_GYRO_XOUT_L, REG_GYRO_XOUT_H, &rot_x_raw);
-			i2c_read_16(ICM20602_ADDR, REG_GYRO_YOUT_L, REG_GYRO_YOUT_H, &rot_y_raw);
-			i2c_read_16(ICM20602_ADDR, REG_GYRO_ZOUT_L, REG_GYRO_ZOUT_H, &rot_z_raw);
+		if(USE_BMI270){
+			gyr_x = bmi270_read_gyro(BMI270_AXIS_X);
+			gyr_y = bmi270_read_gyro(BMI270_AXIS_Y);
+			gyr_z = bmi270_read_gyro(BMI270_AXIS_Z);
 
-			rot_x = rot_x_raw/FS_SEL_divider;
-			rot_y = rot_y_raw/FS_SEL_divider;
-			rot_z = rot_z_raw/FS_SEL_divider;
-
-			acc_x = acc_x_raw/AFS_SEL;
-			acc_y = acc_y_raw/AFS_SEL;
-			acc_z = acc_z_raw/AFS_SEL;
+			gyr_x = bmi270_lsb_to_dps(gyr_x, gyr_range);
+			gyr_y = bmi270_lsb_to_dps(gyr_y, gyr_range);
+			gyr_z = bmi270_lsb_to_dps(gyr_z, gyr_range);
 		}
 
 
 
 		//Wait before updating quaternion. This avoids div by zero in different Quaternion functions.
-		if (waitUpdate > 1 && !sim_ena) {
-			filterUpdate(rot_x, rot_y, rot_z, acc_x, acc_y, acc_z);
-		} else if (sim_ena) {
+		if (waitUpdate >= 1 && !USE_SIM) {
+			filterUpdate(gyr_x * DEG_TO_RAD, gyr_y * DEG_TO_RAD,
+					gyr_z * DEG_TO_RAD, acc_x, acc_y, acc_z);
+		}
+		else if (USE_SIM) {
 			gx_s = 0;
 			gy_s = 0;
 			gz_s = 10;
@@ -232,39 +260,31 @@ int main(void) {
 			az_s = 0.0;
 			filterUpdate(gx_s * DEG_TO_RAD, gy_s * DEG_TO_RAD,
 					gz_s * DEG_TO_RAD, ax_s, ay_s, az_s);
-
-//			zero_c %= 10;
-//			if (zero_c == 0) {
-//				ax_s = 0, ay_s = 0, az_s = 0, gx_s = 0, gy_s = 0, gz_s = 0;
-//			}
-//			zero_c++;
 		}
 
 		waitUpdate++;
-		waitUpdate %= 20;
 
 		euler = ToEulerAngles(q0, q1, q2, q3);
 
-		roll = as5048a_normalize(euler.x * RAD_TO_DEG);
+		roll = euler.x * RAD_TO_DEG;
 		pitch = euler.y * RAD_TO_DEG;
-		yaw = as5048a_normalize(euler.z * RAD_TO_DEG);
+		yaw = euler.z * RAD_TO_DEG;
 
-		sprintf((char*) buff,
+		sprintf((char*) buff, "gyr_range: %f\r\n"
 				"while loop time: %f\r\n"
 				"gyroscope x: %f˚/s, y: %f˚/s, z: %f˚/s\r\n"
 				"accelerometer x: %f m/s2, y: %f m/s2, z: %f m/s2\r\n"
 				"q1: %f, q2: %f, q3: %f, q4: %f\r\n"
-				"roll: %f, pitch: %f, yaw: %f\r\n",
-//			  rot_x, rot_y, rot_z,
-//			  acc_x, acc_y, acc_z,
-				while_t, gx_s, gy_s, gz_s, ax_s, ay_s, az_s, q0, q1, q2, q3, roll, pitch,
-				yaw);
+				"roll: %f, pitch: %f, yaw: %f\r\n", gyr_range, while_t,
+				gyr_x, gyr_y, gyr_z, acc_x, acc_y, acc_z,
+				q0, q1, q2, q3,
+				roll, pitch, yaw);
 
 		HAL_UART_Transmit(&huart2, buff, strlen((char*) buff), HAL_MAX_DELAY);
 
 		HAL_Delay(sampleDelay);
 		t2 = HAL_GetTick();
-		while_t = t2-t1;
+		while_t = t2 - t1;
 		/* USER CODE END WHILE */
 
 		/* USER CODE BEGIN 3 */
@@ -427,7 +447,7 @@ static void MX_GPIO_Init(void) {
 	__HAL_RCC_GPIOB_CLK_ENABLE();
 
 	/*Configure GPIO pin Output Level */
-	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4 | GPIO_PIN_5 | GPIO_PIN_6,
+	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_10 | GPIO_PIN_4 | GPIO_PIN_5 | GPIO_PIN_6,
 			GPIO_PIN_RESET);
 
 	/*Configure GPIO pin : B1_Pin */
@@ -436,8 +456,8 @@ static void MX_GPIO_Init(void) {
 	GPIO_InitStruct.Pull = GPIO_NOPULL;
 	HAL_GPIO_Init(B1_GPIO_Port, &GPIO_InitStruct);
 
-	/*Configure GPIO pins : PB4 PB5 PB6 */
-	GPIO_InitStruct.Pin = GPIO_PIN_4 | GPIO_PIN_5 | GPIO_PIN_6;
+	/*Configure GPIO pins : PB10 PB4 PB5 PB6 */
+	GPIO_InitStruct.Pin = GPIO_PIN_10 | GPIO_PIN_4 | GPIO_PIN_5 | GPIO_PIN_6;
 	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
 	GPIO_InitStruct.Pull = GPIO_NOPULL;
 	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
