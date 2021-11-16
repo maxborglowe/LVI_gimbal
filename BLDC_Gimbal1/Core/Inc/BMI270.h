@@ -52,6 +52,12 @@
 	#define odr_6k4 0x0E
 	#define odr_12k8 0x0F
 //########################
+#define REG_ACC_RANGE 0x41
+	#define range_2g 0x00
+	#define range_4g 0x01
+	#define range_8g 0x02
+	#define range_16g 0x03
+//########################
 #define REG_GYR_CONF 0x42
 //########################
 #define REG_GYR_RANGE 0x43
@@ -60,7 +66,6 @@
 #define range_500 0x02
 #define range_250 0x03
 #define range_125 0x04
-
 //########################
 #define REG_INIT_CTRL 0x59
 #define REG_INIT_DATA 0x5E
@@ -84,13 +89,18 @@
 #define BMI270_AXIS_Y 1
 #define BMI270_AXIS_Z 2
 
-#define BMI270_GYRO_2000_DPS 16.4
-#define BMI270_GYRO_1000_DPS 32.8
-#define BMI270_GYRO_500_DPS 65.6
-#define BMI270_GYRO_250_DPS 131.2
-#define BMI270_GYRO_125_DPS 262.4
+#define BMI270_GYRO_2000_DPS 16.4f
+#define BMI270_GYRO_1000_DPS 32.8f
+#define BMI270_GYRO_500_DPS 65.6f
+#define BMI270_GYRO_250_DPS 131.2f
+#define BMI270_GYRO_125_DPS 262.4f
 
-#define GRAVITY_EARTH 9.80665f
+#define BMI270_ACCEL_2G 16384.0f
+#define BMI270_ACCEL_4G 8192.0f
+#define BMI270_ACCEL_8G 4096.0f
+#define BMI270_ACCEL_16G 2048.0f
+
+#define BMI270_GRAVITY_EARTH 9.80665f
 
 extern uint8_t buff[512];
 extern UART_HandleTypeDef huart2;
@@ -106,7 +116,9 @@ uint8_t bmi270_spi_read_8(uint8_t reg);
 uint16_t bmi270_read_gyro(uint8_t axis);
 uint16_t bmi270_read_accel(uint8_t axis);
 float bmi270_getGyroRange(void);
+float bmi270_getAccelRange(void);
 float bmi270_lsb_to_dps(int16_t val, float dps);
+float bmi270_lsb_to_mps2(int16_t val, float acc_range);
 void bmi270_spi_write_8(uint8_t reg, uint8_t data);
 void bmi270_spi_write_burst(uint8_t reg, uint8_t data[], uint16_t data_size);
 

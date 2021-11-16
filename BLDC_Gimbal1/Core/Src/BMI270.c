@@ -776,11 +776,12 @@ uint16_t bmi270_read_gyro(uint8_t axis){
 	data = bmi270_spi_read_8(2 * axis + REG_DATA_14);
 	data |= bmi270_spi_read_8(2 * axis + REG_DATA_14 + 1)<<8;
 
-	if(axis == BMI270_AXIS_X){
-		uint16_t data_z = (bmi270_spi_read_8(REG_DATA_19)<<8 | bmi270_spi_read_8(REG_DATA_18));
-		uint8_t factor_zx = (bmi270_spi_read_8(REG_GYR_CAS) & 0x3F);
-		data = data - factor_zx * data_z / factor_zx_div;
-	}
+//	if(axis == BMI270_AXIS_X){
+//		uint16_t data_z = bmi270_spi_read_8(REG_DATA_18);
+//		data_z |= bmi270_spi_read_8(REG_DATA_19)<<8;
+//		uint8_t factor_zx = (bmi270_spi_read_8(REG_GYR_CAS) & 0x3F);
+//		data = data - factor_zx * data_z / factor_zx_div;
+//	}
 
 	return data;
 }
@@ -802,7 +803,7 @@ uint16_t bmi270_read_accel(uint8_t axis){
  * @brief Check the correct initialization status as described on p.21 in datasheet.
  */
 void bmi270_spi_init_check() {
-	HAL_Delay(200); //wait >140 ms
+	HAL_Delay(145); //wait >140 ms
 	uint16_t init_status = bmi270_spi_read_8(REG_INTERNAL_STATUS);
 	init_status = init_status & 0x0F;
 	init_status = init_status | 0xC000;
@@ -860,9 +861,11 @@ uint8_t bmi270_spi_read_8(uint8_t reg) {
 	return data;
 }
 
+/*
+ * @brief Read the currently active gyroscope range in the BMI270
+ */
 float bmi270_getGyroRange(){
-	uint8_t gyr_range = bmi270_spi_read_8(REG_GYR_RANGE);
-	switch(gyr_range){
+	switch(bmi270_spi_read_8(REG_GYR_RANGE)){//read gyro range
 	case range_2000:
 		return BMI270_GYRO_2000_DPS;
 	case range_1000:
@@ -874,13 +877,40 @@ float bmi270_getGyroRange(){
 	case range_125:
 		return BMI270_GYRO_125_DPS;
 	}
+	return 0.0f;
 }
 
-/*!
+/*
+ * @brief Read the currently active accelerometer range in the BMI270
+ */
+float bmi270_getAccelRange(){
+	switch(bmi270_spi_read_8(REG_ACC_RANGE)){//read gyro range
+	case range_2g:
+		return BMI270_ACCEL_2G;
+	case range_4g:
+		return BMI270_ACCEL_4G;
+	case range_8g:
+		return BMI270_ACCEL_8G;
+	case range_16g:
+		return BMI270_ACCEL_16G;
+	}
+	return 0.0f;
+}
+
+/*
+ * @brief This function converts lsb to meter per second squared for 16 bit accelerometer at
+ * range 2G, 4G, 8G or 16G.
+ */
+float bmi270_lsb_to_mps2(int16_t val, float acc_range) {
+    float half_scale = ((float)(1 << 16) / 2.0f);
+    return (BMI270_GRAVITY_EARTH * val * acc_range) / half_scale;
+}
+
+/*
  * @brief This function converts lsb to degree per second for 16 bit gyro at
  * range 125, 250, 500, 1000 or 2000dps.
  */
-float bmi270_lsb_to_dps(int16_t val, float dps){
+float bmi270_lsb_to_dps(int16_t val, float dps) {
 	float half_scale = ((float)(1 << 16) / 2.0f);
 	return (dps / ((half_scale) + BMI270_GYRO_2000_DPS)) * (val);
 }

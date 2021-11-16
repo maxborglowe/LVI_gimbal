@@ -66,7 +66,7 @@ HAL_StatusTypeDef status;
 #define USE_SIM 0
 #define USE_ICM20602 0
 #define USE_BMI270 1
-#define USE_ENCODERS 0
+#define USE_AS5048A 0
 
 //######################################
 
@@ -87,12 +87,12 @@ float while_t = 226.0f;
 
 /*IMU variables*/
 //######################################
-float gyr_range;
+float gyr_range, acc_range;
 
 int16_t gyr_x_raw, gyr_y_raw, gyr_z_raw;
 int16_t acc_x_raw, acc_y_raw, acc_z_raw;
-float gyr_x, gyr_y, gyr_z;
-float acc_x, acc_y, acc_z;
+static float gyr_x, gyr_y, gyr_z;
+static float acc_x, acc_y, acc_z;
 
 float roll, pitch, yaw;
 
@@ -178,24 +178,33 @@ int main(void) {
 		icm20602_init();
 	}
 
-	as5048a_init();
 
-	gyr_range = bmi270_getGyroRange();
+
+
 
 	if (USE_BMI270) {
 		bmi270_spi_init();
 		bmi270_spi_init_check();
 
 		bmi270_pwr_conf(BMI270_PWR_MODE_PERF);
+		bmi270_spi_write_8(REG_GYR_RANGE, range_2000);
+		gyr_range = bmi270_getGyroRange();
+		acc_range = bmi270_getAccelRange();
+
+
 	}
 
-	//Set zero position for all encoders
-	zero_pos[ENC_X] = as5048a_getRawRotation(GPIO_ENC_X);
-	zero_pos[ENC_Y] = as5048a_getRawRotation(GPIO_ENC_Y);
-	zero_pos[ENC_Z] = as5048a_getRawRotation(GPIO_ENC_Z);
-	zero_pos_map[ENC_X] = as5048a_readToAngle(zero_pos[ENC_X]);
-	zero_pos_map[ENC_Y] = as5048a_readToAngle(zero_pos[ENC_Y]);
-	zero_pos_map[ENC_Z] = as5048a_readToAngle(zero_pos[ENC_Z]);
+	if(USE_AS5048A){
+		as5048a_init();
+			//Set zero position for all encoders
+		zero_pos[ENC_X] = as5048a_getRawRotation(GPIO_ENC_X);
+		zero_pos[ENC_Y] = as5048a_getRawRotation(GPIO_ENC_Y);
+		zero_pos[ENC_Z] = as5048a_getRawRotation(GPIO_ENC_Z);
+		zero_pos_map[ENC_X] = as5048a_readToAngle(zero_pos[ENC_X]);
+		zero_pos_map[ENC_Y] = as5048a_readToAngle(zero_pos[ENC_Y]);
+		zero_pos_map[ENC_Z] = as5048a_readToAngle(zero_pos[ENC_Z]);
+	}
+
 
 	setSampleFreq();
 	/* USER CODE END 2 */
@@ -206,7 +215,7 @@ int main(void) {
 		t1 = HAL_GetTick();
 		setSampleFreq();
 
-		if (USE_ENCODERS) {
+		if (USE_AS5048A) {
 			as5048a_getAllAngles();
 		}
 
@@ -242,15 +251,22 @@ int main(void) {
 			gyr_x = bmi270_lsb_to_dps(gyr_x, gyr_range);
 			gyr_y = bmi270_lsb_to_dps(gyr_y, gyr_range);
 			gyr_z = bmi270_lsb_to_dps(gyr_z, gyr_range);
+
+			acc_x = bmi270_read_accel(BMI270_AXIS_X);
+			acc_y = bmi270_read_accel(BMI270_AXIS_Y);
+			acc_z = bmi270_read_accel(BMI270_AXIS_Z);
+
+			acc_x = bmi270_lsb_to_mps2(acc_x, acc_range);
+			acc_y = bmi270_lsb_to_mps2(acc_y, acc_range);
+			acc_z = bmi270_lsb_to_mps2(acc_z, acc_range);
 		}
-
-
 
 		//Wait before updating quaternion. This avoids div by zero in different Quaternion functions.
 		if (waitUpdate >= 1 && !USE_SIM) {
 			filterUpdate(gyr_x * DEG_TO_RAD, gyr_y * DEG_TO_RAD,
 					gyr_z * DEG_TO_RAD, acc_x, acc_y, acc_z);
 		}
+
 		else if (USE_SIM) {
 			gx_s = 0;
 			gy_s = 0;
@@ -271,11 +287,14 @@ int main(void) {
 		yaw = euler.z * RAD_TO_DEG;
 
 		sprintf((char*) buff, "gyr_range: %f\r\n"
+				"acc_range: %f\r\n"
 				"while loop time: %f\r\n"
 				"gyroscope x: %f˚/s, y: %f˚/s, z: %f˚/s\r\n"
 				"accelerometer x: %f m/s2, y: %f m/s2, z: %f m/s2\r\n"
 				"q1: %f, q2: %f, q3: %f, q4: %f\r\n"
-				"roll: %f, pitch: %f, yaw: %f\r\n", gyr_range, while_t,
+				"roll: %f, pitch: %f, yaw: %f\r\n",
+				acc_range, gyr_range,
+				while_t,
 				gyr_x, gyr_y, gyr_z, acc_x, acc_y, acc_z,
 				q0, q1, q2, q3,
 				roll, pitch, yaw);
@@ -387,7 +406,7 @@ static void MX_SPI1_Init(void) {
 	hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
 	hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
 	hspi1.Init.NSS = SPI_NSS_SOFT;
-	hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_64;
+	hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_32;
 	hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
 	hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
 	hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
