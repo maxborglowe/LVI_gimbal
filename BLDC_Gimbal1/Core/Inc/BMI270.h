@@ -78,16 +78,13 @@
 	#define temp_en 0x01<<3
 
 //customized BMI270 stuff
-#define BMI270_CS GPIO_PIN_10
+#define PINBUS_BMI270 GPIOB
+#define PIN_BMI270_CS GPIO_PIN_0
 #define BMI270_SPI 1
 
 #define BMI270_PWR_MODE_LOW 0
 #define BMI270_PWR_MODE_NORM 1
 #define BMI270_PWR_MODE_PERF 2
-
-#define BMI270_AXIS_X 0
-#define BMI270_AXIS_Y 1
-#define BMI270_AXIS_Z 2
 
 #define BMI270_GYRO_2000_DPS 16.4f
 #define BMI270_GYRO_1000_DPS 32.8f

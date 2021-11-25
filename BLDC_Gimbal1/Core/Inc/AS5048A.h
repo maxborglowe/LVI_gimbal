@@ -18,10 +18,6 @@
 #define GPIO_ENC_Y GPIO_PIN_5
 #define GPIO_ENC_Z GPIO_PIN_6
 
-#define ENC_X 0
-#define ENC_Y 1
-#define ENC_Z 2
-
 extern SPI_HandleTypeDef hspi1;
 extern UART_HandleTypeDef huart2;
 

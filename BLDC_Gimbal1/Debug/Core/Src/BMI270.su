@@ -7,8 +7,8 @@ BMI270.c:805:6:bmi270_spi_init_check	16	static
 BMI270.c:819:6:bmi270_spi_write_8	24	static
 BMI270.c:834:6:bmi270_spi_write_burst	24	static
 BMI270.c:850:9:bmi270_spi_read_8	24	static
-BMI270.c:867:7:bmi270_getGyroRange	8	static
-BMI270.c:886:7:bmi270_getAccelRange	8	static
+BMI270.c:868:7:bmi270_getGyroRange	8	static
+BMI270.c:887:7:bmi270_getAccelRange	8	static
 BMI270.c:905:7:bmi270_lsb_to_mps2	24	static
 BMI270.c:914:7:bmi270_lsb_to_dps	24	static
 BMI270.c:919:6:bmi270_print	16	static

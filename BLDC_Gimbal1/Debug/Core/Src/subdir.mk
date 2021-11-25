@@ -7,6 +7,7 @@
 C_SRCS += \
 ../Core/Src/AS5048A.c \
 ../Core/Src/BMI270.c \
+../Core/Src/DRV8313.c \
 ../Core/Src/I2C.c \
 ../Core/Src/ICM20602.c \
 ../Core/Src/Quaternions.c \
@@ -20,6 +21,7 @@ C_SRCS += \
 OBJS += \
 ./Core/Src/AS5048A.o \
 ./Core/Src/BMI270.o \
+./Core/Src/DRV8313.o \
 ./Core/Src/I2C.o \
 ./Core/Src/ICM20602.o \
 ./Core/Src/Quaternions.o \
@@ -33,6 +35,7 @@ OBJS += \
 C_DEPS += \
 ./Core/Src/AS5048A.d \
 ./Core/Src/BMI270.d \
+./Core/Src/DRV8313.d \
 ./Core/Src/I2C.d \
 ./Core/Src/ICM20602.d \
 ./Core/Src/Quaternions.d \

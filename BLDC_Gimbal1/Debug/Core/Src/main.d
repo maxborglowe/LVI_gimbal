@@ -19,6 +19,9 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_dma.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_dma_ex.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_cortex.h \
+ ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_adc.h \
+ ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ll_adc.h \
+ ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_adc_ex.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_flash.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_flash_ex.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_flash_ramfunc.h \
@@ -27,9 +30,12 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pwr.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pwr_ex.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_spi.h \
+ ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim.h \
+ ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim_ex.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h \
  ../Core/Inc/ICM20602.h ../Core/Inc/I2C.h ../Core/Inc/BMI270.h \
- ../Core/Inc/I2C.h ../Core/Inc/AS5048A.h ../Core/Inc/Quaternions.h
+ ../Core/Inc/I2C.h ../Core/Inc/AS5048A.h ../Core/Inc/Quaternions.h \
+ ../Core/Inc/DRV8313.h ../Core/Inc/def.h ../Core/Inc/def.h
 
 ../Core/Inc/main.h:
 
@@ -73,6 +79,12 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
 
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_cortex.h:
 
+../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_adc.h:
+
+../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ll_adc.h:
+
+../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_adc_ex.h:
+
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_flash.h:
 
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_flash_ex.h:
@@ -89,6 +101,10 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
 
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_spi.h:
 
+../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim.h:
+
+../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim_ex.h:
+
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h:
 
 ../Core/Inc/ICM20602.h:
@@ -102,3 +118,9 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
 ../Core/Inc/AS5048A.h:
 
 ../Core/Inc/Quaternions.h:
+
+../Core/Inc/DRV8313.h:
+
+../Core/Inc/def.h:
+
+../Core/Inc/def.h:

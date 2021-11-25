@@ -7,6 +7,7 @@
 
 #include <AS5048A.h>
 #include <math.h>
+#include "def.h"
 
 /*
  * @brief Read 16-bit data at selected register.
@@ -137,11 +138,11 @@ void as5048a_getAllAngles() {
  */
 const char* getEncoderName(uint8_t enc) {
 	switch (enc) {
-	case ENC_X:
+	case AXIS_X:
 		return "ENC_X";
-	case ENC_Y:
+	case AXIS_Y:
 		return "ENC_Y";
-	case ENC_Z:
+	case AXIS_Z:
 		return "ENC_Z";
 	}
 }

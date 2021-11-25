@@ -720,7 +720,7 @@ void bmi270_i2c_init() {
 void bmi270_spi_init() {
 	uint8_t chip_id = 0;
 
-	HAL_GPIO_WritePin(GPIOB, BMI270_CS, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(PINBUS_BMI270, PIN_BMI270_CS, GPIO_PIN_SET);
 
 	chip_id = bmi270_spi_read_8(0x00);
 	if (chip_id != 0x24) {
@@ -803,7 +803,7 @@ uint16_t bmi270_read_accel(uint8_t axis){
  * @brief Check the correct initialization status as described on p.21 in datasheet.
  */
 void bmi270_spi_init_check() {
-	HAL_Delay(145); //wait >140 ms
+	HAL_Delay(200); //wait >140 ms
 	uint16_t init_status = bmi270_spi_read_8(REG_INTERNAL_STATUS);
 	init_status = init_status & 0x0F;
 	init_status = init_status | 0xC000;
@@ -819,10 +819,10 @@ void bmi270_spi_init_check() {
 void bmi270_spi_write_8(uint8_t reg, uint8_t data) {
 	uint8_t cmd = reg | 0x00; //write command
 
-	HAL_GPIO_WritePin(GPIOB, BMI270_CS, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(PINBUS_BMI270, PIN_BMI270_CS, GPIO_PIN_RESET);
 	HAL_SPI_Transmit(&hspi1, (uint8_t*) &cmd, 1, 0xFFFF);
 	HAL_SPI_Transmit(&hspi1, (uint8_t*) &data, 1, 0xFFFF);
-	HAL_GPIO_WritePin(GPIOB, BMI270_CS, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(PINBUS_BMI270, PIN_BMI270_CS, GPIO_PIN_SET);
 }
 
 /*
@@ -835,12 +835,12 @@ void bmi270_spi_write_burst(uint8_t reg, uint8_t data[], uint16_t data_size) {
 	uint8_t cmd = reg | 0x00; //write command
 	uint16_t i;
 
-	HAL_GPIO_WritePin(GPIOB, BMI270_CS, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(PINBUS_BMI270, PIN_BMI270_CS, GPIO_PIN_RESET);
 	HAL_SPI_Transmit(&hspi1, (uint8_t*) &cmd, 1, 0xFFFF);
 	for (i = 0; i < data_size; i++) {
 		HAL_SPI_Transmit(&hspi1, (uint8_t*) &data[i], 1, 0xFFFF);
 	}
-	HAL_GPIO_WritePin(GPIOB, BMI270_CS, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(PINBUS_BMI270, PIN_BMI270_CS, GPIO_PIN_SET);
 }
 
 /*
@@ -852,14 +852,15 @@ uint8_t bmi270_spi_read_8(uint8_t reg) {
 	uint8_t data = 0x00;
 	uint8_t cmd = reg | 0x80;
 
-	HAL_GPIO_WritePin(GPIOB, BMI270_CS, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(PINBUS_BMI270, PIN_BMI270_CS, GPIO_PIN_RESET);
 	HAL_SPI_Transmit(&hspi1, (uint8_t*) &cmd, 1, 0xFFFF);
 	HAL_SPI_Receive(&hspi1, (uint8_t*) &dummy, 1, 0xFFFF);
 	HAL_SPI_Receive(&hspi1, (uint8_t*) &data, 1, 0xFFFF);
-	HAL_GPIO_WritePin(GPIOB, BMI270_CS, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(PINBUS_BMI270, PIN_BMI270_CS, GPIO_PIN_SET);
 
 	return data;
 }
+
 
 /*
  * @brief Read the currently active gyroscope range in the BMI270
