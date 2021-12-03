@@ -1,0 +1,9 @@
+AS5048A.c:16:10:as5048a_read	24	static
+AS5048A.c:46:10:as5048a_getRawRotation	16	static
+AS5048A.c:53:6:as5048a_init	16	static
+AS5048A.c:70:7:as5048a_normalize	16	static
+AS5048A.c:85:6:as5048a_setZeroArg	16	static
+AS5048A.c:93:7:as5048a_readToAngle	16	static
+AS5048A.c:97:9:calcEvenParity	24	static
+AS5048A.c:144:6:as5048a_getAngle	16	static
+AS5048A.c:155:6:as5048a_setZero	16	static

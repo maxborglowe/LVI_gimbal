@@ -1,0 +1,4 @@
+DRV8313.c:110:9:drv8313_init	16	static
+DRV8313.c:131:6:drv8313_sense	16	static
+DRV8313.c:141:6:drv8313_setDuty	24	static
+DRV8313.c:151:6:drv8313_setDutyLookup	32	static
