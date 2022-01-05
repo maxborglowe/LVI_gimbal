@@ -1,4 +1,0 @@
-ICM20602.c:14:7:Get_FS_SEL	24	static
-ICM20602.c:75:7:Get_AFS_SEL	16	static
-ICM20602.c:107:7:Get_SampleRate	16	static
-ICM20602.c:126:6:icm20602_init	8	static

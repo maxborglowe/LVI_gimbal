@@ -1,0 +1,71 @@
+/*
+ * DRV8313.c
+ *
+ *  Created on: Nov 17, 2021
+ *      Author: maxborglowe
+ */
+
+#include "DRV8313.h"
+
+/*!
+ * @brief Initialize the DRV8313.
+ * @param Driver into which references to timers etc. will be stored
+ * @param Timer to control the PWM signals.
+ * Procedure:
+ * 1: Set nRESET and nSLEEP to inactive HIGH to enable the three phase H-bridge.
+ * 2: Read the nFAULT pin. If the pin is active HIGH, the initialization stops. If inactive LOW, the procedure continues.
+ * 3: Pass references to timers and timer channels so that the PWM function of each timer may be used.
+ * 4: Start PWM.
+ */
+uint8_t drv8313_init(MotorDriver *driver, TIM_HandleTypeDef *htim) {
+	HAL_GPIO_WritePin(PINBUS_DRV8313, PIN_nSLEEP, GPIO_PIN_SET); /* Enable the unit by setting nRESET + nSLEEP to HIGH*/
+	HAL_Delay(1); //Misread prevention delay.
+	if (!HAL_GPIO_ReadPin(PINBUS_DRV8313, PIN_nFAULT)) {
+		return 0;
+	}
+
+	driver->timer = htim;
+
+	driver->pwm_ch1 = TIM_CHANNEL_1;
+	driver->pwm_ch2 = TIM_CHANNEL_2;
+	driver->pwm_ch3 = TIM_CHANNEL_3;
+
+	PID_Init(&driver->d_reg);
+	PID_Init(&driver->q_reg);
+	PID_Init(&driver->speed_reg);
+
+	driver->d_reg.lim_min = BLDC_MIN_VOLTAGE;
+	driver->d_reg.lim_max = BLDC_MAX_VOLTAGE;
+	driver->q_reg.lim_min = BLDC_MIN_VOLTAGE;
+	driver->q_reg.lim_max = BLDC_MAX_VOLTAGE;
+	driver->speed_reg.lim_min = 0;
+	driver->speed_reg.lim_max = 2000;
+
+	HAL_TIM_PWM_Start(driver->timer, driver->pwm_ch1);
+	HAL_TIM_PWM_Start(driver->timer, driver->pwm_ch2);
+	HAL_TIM_PWM_Start(driver->timer, driver->pwm_ch3);
+
+	return 1;
+
+}
+
+/*!
+ * @brief Set the PWM duty cycle on each phase of a BLDC
+ * @param BLDC pointer
+ * @param duty cycle on phase a
+ * @param duty cycle on phase b
+ * @param duty cycle on phase c
+ */
+void drv8313_setPWM(MotorDriver *driver, float duty_a, float duty_b, float duty_c) {
+	uint16_t period = driver->timer->Init.Period + 1;
+
+	/* Wait for PWM period to finish before setting new duty period
+	 * Note: May be unnecessary, but used as a safety measure for now */
+	while(driver->timer->Instance->CNT != 0){
+	}
+
+	driver->timer->Instance->CCR1 = duty_a * period;
+	driver->timer->Instance->CCR2 = duty_b * period;
+	driver->timer->Instance->CCR3 = duty_c * period;
+}
+
