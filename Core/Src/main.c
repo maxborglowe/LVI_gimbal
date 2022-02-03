@@ -32,6 +32,7 @@
 #include "DRV8313.h"
 #include "def.h"
 #include "foc.h"
+#include "time_utils.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -122,7 +123,7 @@ float us_to_ms = 0.001; //convert us to ms
 //######################################
 
 uint32_t loop_cnt = 0;
-uint32_t print_flag = 300; //how many loops should run before printing values
+uint32_t print_flag = 1000; //how many loops should run before printing values
 
 char *buff[BUFF_SIZE]; //string buffer for UART-printing
 
@@ -192,6 +193,8 @@ int main(void)
 				HAL_MAX_DELAY);
 	}
 
+	DWT_Init();
+
 	EulerAngles Euler;
 
 	IMU Imu;
@@ -209,6 +212,8 @@ int main(void)
 		as5048a_init(&MotorX);
 		as5048a_init(&MotorY);
 		as5048a_init(&MotorZ);
+
+		MotorY.LPF_angle_measure.Tf = 0.001f;
 	}
 
 	if (USE_DRV8313) {
@@ -218,15 +223,12 @@ int main(void)
 		drv8313_init(&MotorY, &htim2);
 		drv8313_init(&MotorZ, &htim3);
 
-		MotorX.pole_pairs = 22/2;
-		MotorY.pole_pairs = 22/2;
-		MotorZ.pole_pairs = 22/2;
+		MotorX.pole_pairs = 11;
+		MotorY.pole_pairs = 11;
+		MotorZ.pole_pairs = 11;
 
-		MotorX.direction = CCW;
+//		foc_init(&MotorX);
 
-		foc_alignToRotor(&MotorX);
-		//foc_alignToRotor(&MotorY);
-		//foc_alignToRotor(&MotorZ);
 
 		/*Initialize ADC */
 		HAL_ADC_Start_DMA(&hadc1, (uint32_t*) adc_read, ADC_CHANNELS);
@@ -251,12 +253,6 @@ int main(void)
 
 		MotorZ.i_a = (adc_read[6]*adc_ratio*adc_ref - ina_ref)*sense_ratio;
 		MotorZ.i_b = (adc_read[7]*adc_ratio*adc_ref - ina_ref)*sense_ratio;
-
-		MotorX.speed_reg.T = (float)us_t_prev*us_to_ms;
-		MotorX.q_reg.T = (float)us_t_prev*us_to_ms;
-		MotorX.d_reg.T = (float)us_t_prev*us_to_ms;
-
-		//foc_ClarkePark(&MotorX);
 
 	}
 
@@ -293,30 +289,31 @@ int main(void)
 
 	setSampleFreq_ms();
 
-	TIM5->PSC = 84;
-	TIM5->ARR = 1000000 - 1;
-
-	HAL_TIM_Base_Start(&htim5);
+//	TIM5->PSC = 84;
+//	TIM5->ARR = 1000000 - 1;
+//
+//	HAL_TIM_Base_Start(&htim5);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
 	while (1) {
-		us_t = __HAL_TIM_GET_COUNTER(&htim5);
-//		setSampleFreq_us();
-		t1 = HAL_GetTick();
-		setSampleFreq_ms();
+
+
+//
+//		us_t = __HAL_TIM_GET_COUNTER(&htim5);
+////		setSampleFreq_us();
+//		t1 = HAL_GetTick();
+		setSampleFreq_us();
 
 		if (USE_AS5048A) {
-//			as5048a_getAngle(&MotorX);
-//			as5048a_getAngle(&MotorY);
+			as5048a_getAngle(&MotorX);
+			as5048a_getAngle(&MotorY);
 //			as5048a_getAngle(&MotorZ);
-
-
 		}
 
-		if (USE_DRV8313 && !USE_IMU_VIS) {
-			/* ADC interrupt wait */
+		if (USE_DRV8313) {
+			/* ADC DMA wait */
 			while (adcConvComplete == 0) {
 			}
 			adcConvComplete = 0;
@@ -324,70 +321,56 @@ int main(void)
 			/* get reference voltage on INA2181 */
 			ina_ref = adc_read[2]*adc_ratio*adc_ref;
 
-			MotorX.speed_reg.T = (float)us_t_prev*us_to_ms;
-			MotorX.q_reg.T = (float)us_t_prev*us_to_ms;
-			MotorX.d_reg.T = (float)us_t_prev*us_to_ms;
-
 			/* get phase currents on each motor */
 			MotorX.i_a = (adc_read[0]*adc_ratio*adc_ref - ina_ref)*sense_ratio;
 			MotorX.i_b = (adc_read[1]*adc_ratio*adc_ref - ina_ref)*sense_ratio;
-			as5048a_calcSpeed(&MotorX, us_t_prev*0.000001); //convert us to s
-			as5048a_calcSpeed(&MotorY, us_t_prev*0.000001);
-			as5048a_calcSpeed(&MotorZ, us_t_prev*0.000001);
-			foc_update(&MotorX);
+			foc_update(&MotorX, 180);
 
+//
 			MotorY.i_a = (adc_read[3]*adc_ratio*adc_ref - ina_ref)*sense_ratio;
 			MotorY.i_b = (adc_read[4]*adc_ratio*adc_ref - ina_ref)*sense_ratio;
-//			foc_update(&MotorY);
-
+////			foc_update(&MotorY);
+//
 			MotorZ.i_a = (adc_read[6]*adc_ratio*adc_ref - ina_ref)*sense_ratio;
 			MotorZ.i_b = (adc_read[7]*adc_ratio*adc_ref - ina_ref)*sense_ratio;
 //			foc_update(&MotorZ);
 
-
-
-//			foc_ClarkePark(&MotorX);
-//			foc_setPhaseVoltage_PI(&MotorX);
-
-//			drv8313_setPWM(&MotorX, 0.1, 0.2, 0.3);
-
-			//drv8313_setPWM(&MotorX, duty_a, duty_b, duty_c);
 		}
 
 
 		if (USE_BMI270) {
-			Imu.gyr_x = (int16_t) bmi270_read_gyro(AXIS_X) / Imu.gyr_range;
-			Imu.gyr_y = (int16_t) bmi270_read_gyro(AXIS_Y) / Imu.gyr_range;
-			Imu.gyr_z = (int16_t) bmi270_read_gyro(AXIS_Z) / Imu.gyr_range;
+			Imu.gyr_x = (int16_t) bmi270_read_gyro(AXIS_X) * Imu.inv_gyr_range;
+			Imu.gyr_y = (int16_t) bmi270_read_gyro(AXIS_Y) * Imu.inv_gyr_range;
+			Imu.gyr_z = (int16_t) bmi270_read_gyro(AXIS_Z) * Imu.inv_gyr_range;
 
 			if (!HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_13)) {
 				q0 = 1.0f, q1 = 0.0f, q2 = 0.0f, q3 = 0.0f;
 			}
 
-			bmi270_calibrateNoise(&Imu);
-			//gyro limiter. Prevents yaw drift programmatically, with some success.
-			if (Imu.calibration_c >= BMI270_CALIBRATION_TIM) {
-				if (Imu.gyr_x > -Imu.gyr_lim_min_x
-						&& Imu.gyr_x < Imu.gyr_lim_max_x) {
-					Imu.gyr_x = 0.0f;
-				}
-				if (Imu.gyr_y > -Imu.gyr_lim_min_y
-						&& Imu.gyr_y < Imu.gyr_lim_max_x) {
-					Imu.gyr_y = 0.0f;
-				}
-				if (Imu.gyr_z > -Imu.gyr_lim_min_z
-						&& Imu.gyr_z < Imu.gyr_lim_max_z) {
-					Imu.gyr_z = 0.0f;
-				}
-			}
+//			bmi270_calibrateNoise(&Imu);
+//			//gyro limiter. Prevents yaw drift programmatically, with some success.
+//			if (Imu.calibration_c >= BMI270_CALIBRATION_TIM) {
+//				if (Imu.gyr_x > -Imu.gyr_lim_min_x
+//						&& Imu.gyr_x < Imu.gyr_lim_max_x) {
+//					Imu.gyr_x = 0.0f;
+//				}
+//				if (Imu.gyr_y > -Imu.gyr_lim_min_y
+//						&& Imu.gyr_y < Imu.gyr_lim_max_x) {
+//					Imu.gyr_y = 0.0f;
+//				}
+//				if (Imu.gyr_z > -Imu.gyr_lim_min_z
+//						&& Imu.gyr_z < Imu.gyr_lim_max_z) {
+//					Imu.gyr_z = 0.0f;
+//				}
+//			}
 
-			Imu.acc_x = (int16_t) bmi270_read_accel(AXIS_X) / Imu.acc_range;
-			Imu.acc_y = (int16_t) bmi270_read_accel(AXIS_Y) / Imu.acc_range;
-			Imu.acc_z = (int16_t) bmi270_read_accel(AXIS_Z) / Imu.acc_range;
+			Imu.acc_x = (int16_t) bmi270_read_accel(AXIS_X) * Imu.inv_acc_range;
+			Imu.acc_y = (int16_t) bmi270_read_accel(AXIS_Y) * Imu.inv_acc_range;
+			Imu.acc_z = (int16_t) bmi270_read_accel(AXIS_Z) * Imu.inv_acc_range;
 
 			//Wait before updating quaternion. This avoids div by zero in different Quaternion functions.
-					if (waitFilterUpdate >= 1)
-						filterUpdate(Imu.gyr_x * DEG_TO_RAD, Imu.gyr_y * DEG_TO_RAD, Imu.gyr_z * DEG_TO_RAD, Imu.acc_x, Imu.acc_y, Imu.acc_z);
+			if (waitFilterUpdate >= 1)
+				filterUpdate(Imu.gyr_x * DEG_TO_RAD, Imu.gyr_y * DEG_TO_RAD, Imu.gyr_z * DEG_TO_RAD, Imu.acc_x, Imu.acc_y, Imu.acc_z);
 			Euler = ToEulerAngles(q0, q1, q2, q3);
 			Imu.roll = Euler.x * RAD_TO_DEG;
 			Imu.pitch = Euler.y * RAD_TO_DEG;
@@ -396,91 +379,89 @@ int main(void)
 			waitFilterUpdate++;
 		}
 
-		if (USE_PRINT) {
-			uint16_t len = 0;
-
-			if (!USE_IMU_VIS && !loop_cnt) {
-				if (USE_AS5048A) {
-					len += sprintf((char*) buff + len,
-							"\r\n########## ENCODER ANGLES ##########\r\n"
-							"while loop duration [ms]: %.3f\r\n"
-							"sample frequency [Hz]: %.3f\r\n"
-							"MotorX\r\n"
-							"Angle: %.3f\t Zero pos: %.3f\t speed: %.3f\r\n"
-							"MotorY\r\n"
-							"Angle: %.3f\t Zero pos: %.3f\r\n"
-							"MotorZ\r\n"
-							"Angle: %.3f\t Zero pos: %.3f\r\n",
-							us_t_prev*0.001,
-							1/(us_t_prev*0.000001),
-							MotorX.angle, MotorX.zero_pos_map, MotorX.speed_rpm,
-							MotorY.angle, MotorY.zero_pos_map,
-							MotorZ.angle, MotorZ.zero_pos_map);
-				}
-				if (USE_DRV8313) {
-					len += sprintf((char*) buff + len,
-							"\r\n########## DRV8313 DATA ##########\r\n"
-							"######################################\r\n"
-							"MotorX\r\n"
-							"i_a: %.3f\ti_b: %.3f\r\n"
-							"MotorY\r\n"
-							"i_a: %f\ti_b: %f\r\n"
-							"MotorZ\r\n"
-							"i_a: %f\ti_b: %f\r\n"
-							"INA181 ref. voltage: %.3f\r\n",
-							MotorX.i_a, MotorX.i_b,
-							MotorY.i_a, MotorY.i_b,
-							MotorZ.i_a, MotorZ.i_b,
-							ina_ref);
-				}
-				if (USE_BMI270) {
-					len += sprintf((char*) buff + len,
-							"\r\n########## IMU DATA ##########\r\n"
-							"gyr_range: %f\r\n"
-							"acc_range: %f\r\n"
-							"while loop time: %f\r\n"
-							"us_t: %u\r\n"
-							"sampleFreq: %f\r\n"
-							"gyr_lim_min_x: %f\tgyr_lim_min_y: %f\tgyr_lim_min_z: %f\r\n"
-							"gyr_lim_max_x: %f\tgyr_lim_max_y: %f\tgyr_lim_max_z: %f\r\n"
-							"gyroscope x: %f˚/s, y: %f˚/s, z: %f˚/s\r\n"
-							"accelerometer x: %f m/s2, y: %f m/s2, z: %f m/s2\r\n"
-							"q0: %f, q1: %f, q2: %f, q3: %f\r\n"
-							"roll: %f, pitch: %f, yaw: %f\r\n",
-							Imu.acc_range, Imu.gyr_range, while_t,
-							us_t_prev, sampleFreq, Imu.gyr_lim_min_x,
-							Imu.gyr_lim_min_y, Imu.gyr_lim_min_z,
-							Imu.gyr_lim_max_x, Imu.gyr_lim_max_y,
-							Imu.gyr_lim_max_z, Imu.gyr_x, Imu.gyr_y,
-							Imu.gyr_z, Imu.acc_x, Imu.acc_y, Imu.acc_z,
-							q0, q1, q2, q3, Imu.roll, Imu.pitch,
-							Imu.yaw);
-				}
-				HAL_UART_Transmit(&huart2, (uint8_t*) buff,
-						strlen((char*) buff),
-						HAL_MAX_DELAY);
-			}
-			if (USE_IMU_VIS) {
-				len += sprintf((char*) buff + len,
-						"w%.4fwa%.4fab%.4fbc%.4fcy%.4fyp%.4fpr%.4fr\r\n", q0,
-						q1, q2, q3, Imu.yaw, Imu.pitch, Imu.roll);
-				HAL_UART_Transmit(&huart2, (uint8_t*) buff,
-						strlen((char*) buff),
-						HAL_MAX_DELAY);
-			}
-
-		}
-
-		//HAL_Delay(sampleDelay);
+//		if (USE_PRINT) {
+//			uint16_t len = 0;
+//
+//			if (!USE_IMU_VIS && !loop_cnt) {
+//				if (USE_AS5048A) {
+//					len += sprintf((char*) buff + len,
+//							"\r\n########## ENCODER ANGLES ##########\r\n"
+//							"while loop duration [ms]: %.3f\r\n"
+//							"sample frequency [Hz]: %.3f\r\n"
+//							"MotorX\r\n"
+//							"Angle: %.3f\t Zero pos: %.3f\t speed: %.3f˚/s\r\n"
+//							"MotorY\r\n"
+//							"Angle: %.3f\t Zero pos: %.3f\r\n"
+//							"MotorZ\r\n"
+//							"Angle: %.3f\t Zero pos: %.3f\r\n",
+//							us_t_prev*1e-3,
+//							1/(us_t_prev*1e-6),
+//							MotorX.angle, MotorX.zero_pos_map, MotorX.velocity,
+//							MotorY.angle, MotorY.zero_pos_map,
+//							MotorZ.angle, MotorZ.zero_pos_map);
+//				}
+////				if (USE_DRV8313) {
+////					len += sprintf((char*) buff + len,
+////							"\r\n########## DRV8313 DATA ##########\r\n"
+////							"######################################\r\n"
+////							"MotorX\r\n"
+////							"i_a: %.3f\ti_b: %.3f\r\n"
+////							"MotorY\r\n"
+////							"i_a: %f\ti_b: %f\r\n"
+////							"MotorZ\r\n"
+////							"i_a: %f\ti_b: %f\r\n"
+////							"INA181 ref. voltage: %.3f\r\n",
+////							MotorX.i_a, MotorX.i_b,
+////							MotorY.i_a, MotorY.i_b,
+////							MotorZ.i_a, MotorZ.i_b,
+////							ina_ref);
+////				}
+//				if (USE_BMI270) {
+//					len += sprintf((char*) buff + len,
+//							"\r\n########## IMU DATA ##########\r\n"
+//							"gyr_range: %f\r\n"
+//							"acc_range: %f\r\n"
+//							"while loop time: %f\r\n"
+//							"us_t: %u\r\n"
+//							"sampleFreq: %f\r\n"
+//							"gyr_lim_min_x: %f\tgyr_lim_min_y: %f\tgyr_lim_min_z: %f\r\n"
+//							"gyr_lim_max_x: %f\tgyr_lim_max_y: %f\tgyr_lim_max_z: %f\r\n"
+//							"gyroscope x: %f˚/s, y: %f˚/s, z: %f˚/s\r\n"
+//							"accelerometer x: %f m/s2, y: %f m/s2, z: %f m/s2\r\n"
+//							"q0: %f, q1: %f, q2: %f, q3: %f\r\n"
+//							"roll: %f, pitch: %f, yaw: %f\r\n",
+//							Imu.acc_range, Imu.gyr_range, while_t,
+//							us_t_prev, sampleFreq, Imu.gyr_lim_min_x,
+//							Imu.gyr_lim_min_y, Imu.gyr_lim_min_z,
+//							Imu.gyr_lim_max_x, Imu.gyr_lim_max_y,
+//							Imu.gyr_lim_max_z, Imu.gyr_x, Imu.gyr_y,
+//							Imu.gyr_z, Imu.acc_x, Imu.acc_y, Imu.acc_z,
+//							q0, q1, q2, q3, Imu.roll, Imu.pitch,
+//							Imu.yaw);
+//				}
+//				HAL_UART_Transmit(&huart2, (uint8_t*) buff,
+//						strlen((char*) buff),
+//						HAL_MAX_DELAY);
+//			}
+//			if (USE_IMU_VIS) {
+//				len += sprintf((char*) buff + len,
+//						"w%.4fwa%.4fab%.4fbc%.4fcy%.4fyp%.4fpr%.4fr\r\n", q0,
+//						q1, q2, q3, Imu.yaw, Imu.pitch, Imu.roll);
+//				HAL_UART_Transmit(&huart2, (uint8_t*) buff,
+//						strlen((char*) buff),
+//						HAL_MAX_DELAY);
+//			}
+//
+//		}
 
 		loop_cnt++;
 		loop_cnt %= print_flag;
 		/* millisecond timer */
-		t2 = HAL_GetTick();
-		while_t = t2 - t1;
-		/* microsecond timer */
-		us_t = __HAL_TIM_GET_COUNTER(&htim5) - us_t;
-		us_t_prev = us_t;
+//		t2 = HAL_GetTick();
+//		while_t = t2 - t1;
+//		/* microsecond timer */
+//		us_t = __HAL_TIM_GET_COUNTER(&htim5) - us_t;
+//		us_t_prev = us_t;
 //		setSampleFreq_us();
 
     /* USER CODE END WHILE */
@@ -671,7 +652,7 @@ static void MX_SPI1_Init(void)
   hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
   hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
   hspi1.Init.NSS = SPI_NSS_SOFT;
-  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_32;
+  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4;
   hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
   hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
@@ -709,7 +690,7 @@ static void MX_TIM1_Init(void)
   htim1.Instance = TIM1;
   htim1.Init.Prescaler = 1;
   htim1.Init.CounterMode = TIM_COUNTERMODE_CENTERALIGNED1;
-  htim1.Init.Period = 2048-1;
+  htim1.Init.Period = 1200-1;
   htim1.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim1.Init.RepetitionCounter = 0;
   htim1.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
@@ -790,7 +771,7 @@ static void MX_TIM2_Init(void)
   htim2.Instance = TIM2;
   htim2.Init.Prescaler = 1;
   htim2.Init.CounterMode = TIM_COUNTERMODE_CENTERALIGNED1;
-  htim2.Init.Period = 1024-1;
+  htim2.Init.Period = 512-1;
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_PWM_Init(&htim2) != HAL_OK)
@@ -999,6 +980,9 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0|GPIO_PIN_13|GPIO_PIN_4|GPIO_PIN_5
                           |GPIO_PIN_6, GPIO_PIN_RESET);
 
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_12, GPIO_PIN_RESET);
+
   /*Configure GPIO pin : B1_Pin */
   GPIO_InitStruct.Pin = B1_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
@@ -1019,6 +1003,13 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PA12 */
+  GPIO_InitStruct.Pin = GPIO_PIN_12;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
 }
 

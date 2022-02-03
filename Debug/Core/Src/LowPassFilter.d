@@ -1,4 +1,4 @@
-Core/Src/FOC.o: ../Core/Src/FOC.c ../Core/Inc/FOC.h \
+Core/Src/LowPassFilter.o: ../Core/Src/LowPassFilter.c \
  ../Core/Inc/LowPassFilter.h ../Core/Inc/time_utils.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h \
  ../Core/Inc/stm32f4xx_hal_conf.h \
@@ -31,11 +31,7 @@ Core/Src/FOC.o: ../Core/Src/FOC.c ../Core/Inc/FOC.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_spi.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim_ex.h \
- ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h \
- ../Core/Inc/def.h ../Core/Inc/Quaternions.h ../Core/Inc/pid.h \
- ../Core/Inc/DRV8313.h ../Core/Inc/LowPassFilter.h ../Core/Inc/AS5048A.h
-
-../Core/Inc/FOC.h:
+ ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h
 
 ../Core/Inc/LowPassFilter.h:
 
@@ -104,15 +100,3 @@ Core/Src/FOC.o: ../Core/Src/FOC.c ../Core/Inc/FOC.h \
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim_ex.h:
 
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h:
-
-../Core/Inc/def.h:
-
-../Core/Inc/Quaternions.h:
-
-../Core/Inc/pid.h:
-
-../Core/Inc/DRV8313.h:
-
-../Core/Inc/LowPassFilter.h:
-
-../Core/Inc/AS5048A.h:

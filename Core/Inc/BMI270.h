@@ -130,8 +130,9 @@
 
 
 typedef struct IMU{
-	float gyr_range;
-	float acc_range;
+	float gyr_range, acc_range;
+
+	float inv_gyr_range, inv_acc_range;
 
 	float gyr_x, gyr_y, gyr_z;
 	float acc_x, acc_y, acc_z;
@@ -141,7 +142,6 @@ typedef struct IMU{
 	float gyr_lim_max_x, gyr_lim_max_y, gyr_lim_max_z;
 
 	uint16_t calibration_c;
-
 	/* GYR_CONF */
 	uint8_t gyr_odr, gyr_bwp, gyr_noise_perf, gyr_filter_perf;
 	/* ACC_CONF */

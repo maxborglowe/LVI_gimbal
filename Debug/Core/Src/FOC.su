@@ -1,7 +1,9 @@
-FOC.c:12:6:foc_ClarkePark	32	static
-FOC.c:25:6:foc_alignToRotor	40	static
-FOC.c:67:7:foc_getElectricalAngle	16	static
-FOC.c:75:7:foc_normalizeAngle	16	static
-FOC.c:82:6:foc_update	16	static
-FOC.c:98:6:foc_motion	16	static
-FOC.c:104:6:foc_setPhaseVoltage	88	static
+FOC.c:16:7:sqrtApprox	0	static
+FOC.c:32:7:_normalizeAngle	8	static
+FOC.c:37:6:foc_init	0	static
+FOC.c:44:6:foc_ClarkePark	32	static
+FOC.c:102:6:foc_getElectricalAngle	0	static
+FOC.c:150:6:foc_pi_control	16	static
+FOC.c:170:6:foc_invPark	0	static
+FOC.c:176:6:foc_setPhaseVoltage3	48	static
+FOC.c:118:6:foc_update	40	static

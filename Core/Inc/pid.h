@@ -9,15 +9,15 @@
 #define INC_PID_H_
 
 #include "def.h"
+#include "time_utils.h"
 
 typedef struct PID {
 	float Kp, Ki, Kd; /* Controller gains */
 
-	float tau; /* LP filter time constant for D-term */
-
 	float lim_min, lim_max; /* Output limits */
 
-	float T; /* Sample time in seconds */
+	uint32_t timestamp_prev;
+	float Ts; /* Sample time in seconds */
 
 	float integrator, prevErr;
 	float differentiator, prevMeas;

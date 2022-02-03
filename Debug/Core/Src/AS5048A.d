@@ -1,4 +1,5 @@
 Core/Src/AS5048A.o: ../Core/Src/AS5048A.c ../Core/Inc/AS5048A.h \
+ ../Core/Inc/def.h ../Core/Inc/Quaternions.h ../Core/Inc/DRV8313.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h \
  ../Core/Inc/stm32f4xx_hal_conf.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_rcc.h \
@@ -31,10 +32,15 @@ Core/Src/AS5048A.o: ../Core/Src/AS5048A.c ../Core/Inc/AS5048A.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim_ex.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h \
- ../Core/Inc/def.h ../Core/Inc/Quaternions.h ../Core/Inc/DRV8313.h \
- ../Core/Inc/pid.h
+ ../Core/Inc/pid.h ../Core/Inc/time_utils.h ../Core/Inc/LowPassFilter.h
 
 ../Core/Inc/AS5048A.h:
+
+../Core/Inc/def.h:
+
+../Core/Inc/Quaternions.h:
+
+../Core/Inc/DRV8313.h:
 
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h:
 
@@ -100,10 +106,8 @@ Core/Src/AS5048A.o: ../Core/Src/AS5048A.c ../Core/Inc/AS5048A.h \
 
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h:
 
-../Core/Inc/def.h:
-
-../Core/Inc/Quaternions.h:
-
-../Core/Inc/DRV8313.h:
-
 ../Core/Inc/pid.h:
+
+../Core/Inc/time_utils.h:
+
+../Core/Inc/LowPassFilter.h:

@@ -52,35 +52,49 @@ uint16_t as5048a_getRawRotation(uint16_t ss) {
 void as5048a_init(MotorDriver *driver) {
 	HAL_GPIO_WritePin(PINBUS_ENC, driver->PIN_ENC, GPIO_PIN_SET);
 
-	driver->zero_pos = as5048a_getRawRotation(driver->PIN_ENC);
-	driver->zero_pos_map = as5048a_readToAngle(driver->zero_pos);
+	as5048a_setZero(driver);
 
 	as5048a_getAngle(driver);
 
 	HAL_Delay(1);
+
+	lpf_init(&driver->LPF_angle_measure, 0.005);
 }
 
 /*
- * @brief Normalized the input angle, meaning that the angle starts at 0˙ and ends at 360˙
+ * @brief Normalized the input angle, meaning that the angle starts at 0˚ and ends at 360˚
  * @param unnormalized input angle
  */
 float as5048a_normalize(float angle) {
-	//angle += 180;
+	angle += 180;
 	angle = fmod(angle, 360);
 	if (angle < 0) {
 		angle += 360;
 	}
-	//angle -= 180;
+	angle -= 180;
 	return angle;
 }
+
+/*
+ * @brief Normalized the input angle, meaning that the angle starts at 0 and ends at 2PI
+ * @param unnormalized input angle
+ */
+float as5048a_normalizeRad(float angle) {
+	angle += _PI;
+	angle = fmod(angle, _2PI);
+	if (angle < 0) angle += _2PI;
+	angle -= _PI;
+	return angle;
+}
+
 
 /*
  * @brief Set the zero position to arbitrary value.
  * Use: When moving the camera by hand, you could make the zero position the same as the current angle
  * @param input angle
  */
-void as5048a_setZeroArg(MotorDriver *driver, uint16_t arg_pos) {
-	driver->zero_pos = arg_pos % 360;
+void as5048a_setZeroArg(MotorDriver *driver, float arg_pos) {
+	driver->zero_pos = fmod(arg_pos, 360);
 }
 
 /*
@@ -88,7 +102,15 @@ void as5048a_setZeroArg(MotorDriver *driver, uint16_t arg_pos) {
  * @param Raw angular data input.
  */
 float as5048a_readToAngle(uint16_t angle) {
-	return 2 * ((float) angle * ((float) 360 / 16383) - 180);
+	return 2 * ((float) angle * (360.0f * _1_16384) - 180);
+}
+
+/*
+ * @brief Convert raw data from getRawRotation to angles in degrees.
+ * @param Raw angular data input.
+ */
+float as5048a_readToAngleRad(uint16_t angle) {
+	return 2 * ((float) angle * (_2PI * _1_16384) - _PI);
 }
 
 uint8_t calcEvenParity(uint16_t value) {
@@ -108,13 +130,16 @@ uint8_t calcEvenParity(uint16_t value) {
  *
  */
 void as5048a_getAngle(MotorDriver *driver) {
-	driver->prev_angle = driver->angle;
+	float angle = as5048a_readToAngle(as5048a_getRawRotation(driver->PIN_ENC)); //- driver->zero_pos_map;
+	driver->angle = lpf_exec(&driver->LPF_angle_measure, as5048a_normalize(angle));
+}
 
-	driver->curr_angle = as5048a_getRawRotation(driver->PIN_ENC);
-	driver->curr_angle_map = as5048a_readToAngle(driver->curr_angle);
-
-	driver->angle = driver->curr_angle_map - driver->zero_pos_map;
-	driver->angle = as5048a_normalize(driver->angle);
+/** @brief Get angle from encoder on selected motor.
+ *
+ */
+void as5048a_getAngleRad(MotorDriver *driver) {
+	float angle = as5048a_readToAngleRad(as5048a_getRawRotation(driver->PIN_ENC)); //- driver->zero_pos_map;
+	driver->angle = lpf_exec(&driver->LPF_angle_measure, as5048a_normalizeRad(angle));
 }
 
 /**
@@ -125,12 +150,25 @@ void as5048a_setZero(MotorDriver *driver) {
 	driver->zero_pos_map = as5048a_readToAngle(driver->zero_pos);
 }
 
-/**@brief Calculate speed in RPM using angular values and input time
- *@param motordriver containing angle values
- *@param time in us
+/**@brief Calculate speed in ˚/s using angular values and input time
+ *@param Motor driver containing anglular values
  */
-void as5048a_calcSpeed(MotorDriver *driver, float t){
-	/* Divide angular difference by 360˚ and multiply by 60 sec to get RPM */
-		driver->speed_rpm = (driver->prev_angle - driver->angle)/t*0.166666667;
+void as5048a_getVelocity(MotorDriver *driver){
+
+//	as5048a_getAngle(driver);
+	uint32_t timestamp_us = get_us();
+
+	float T_samp = (timestamp_us - driver->prev_timestamp_us) * 1e-6f;
+	if(T_samp <= 0 || T_samp > 0.5f) T_samp = 1e-3;
+
+	/* Calculate difference between current and previous angles */
+	float angle_diff = fabs(fmod(driver->angle - driver->prev_angle + 180, 360) - 180);
+
+	/* Calculate velocity */
+	driver->velocity = angle_diff/T_samp;
+	if(T_samp == 0) driver->velocity = 0;
+
+	driver->prev_timestamp_us = timestamp_us;
+	driver->prev_angle = driver->angle;
 }
 

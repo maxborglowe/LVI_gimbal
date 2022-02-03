@@ -887,6 +887,8 @@ void bmi270_getGyroRange(IMU *Imu){
 		Imu->gyr_range = BMI270_GYRO_125_DPS;
 		break;
 	}
+
+	Imu->inv_gyr_range = 1/Imu->gyr_range;
 }
 
 /*
@@ -907,6 +909,8 @@ void bmi270_getAccelRange(IMU *Imu){
 		Imu->acc_range = BMI270_ACCEL_16G;
 		break;
 	}
+
+	Imu->inv_acc_range = 1/Imu->acc_range;
 }
 
 void bmi270_calibrateInit(IMU *Imu, float lim){

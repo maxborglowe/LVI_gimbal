@@ -7,19 +7,22 @@
 
 #include <math.h>
 #include "Quaternions.h"
+#include "time_utils.h"
 
 /*
  * @brief Set the sample frequency based on the while loop cycle time (in milliseconds)
  */
 void setSampleFreq_ms() {
-	sampleFreq = 1 / (0.001 * while_t);
+	sampleFreq = 1 / (1e-3 * while_t);
 }
 
 /*
  * @brief Set the sample frequency based on the while loop cycle time (in milliseconds)
  */
 void setSampleFreq_us() {
-	sampleFreq = 1 / (0.000001 * us_t);
+
+	sampleFreq = 1 / get_us();
+//	sampleFreq = 1 / (1e-6 * us_t);
 }
 
 /*

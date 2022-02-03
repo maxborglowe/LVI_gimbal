@@ -30,20 +30,52 @@ uint8_t drv8313_init(MotorDriver *driver, TIM_HandleTypeDef *htim) {
 	driver->pwm_ch2 = TIM_CHANNEL_2;
 	driver->pwm_ch3 = TIM_CHANNEL_3;
 
+	/* PID config */
 	PID_Init(&driver->d_reg);
 	PID_Init(&driver->q_reg);
 	PID_Init(&driver->speed_reg);
+	PID_Init(&driver->pos_reg);
 
-	driver->d_reg.lim_min = BLDC_MIN_VOLTAGE;
+	driver->d_reg.lim_min = -BLDC_MAX_VOLTAGE;
 	driver->d_reg.lim_max = BLDC_MAX_VOLTAGE;
-	driver->q_reg.lim_min = BLDC_MIN_VOLTAGE;
+	driver->q_reg.lim_min = -BLDC_MAX_VOLTAGE;
 	driver->q_reg.lim_max = BLDC_MAX_VOLTAGE;
-	driver->speed_reg.lim_min = 0;
-	driver->speed_reg.lim_max = 2000;
+	driver->speed_reg.lim_min = -BLDC_MAX_VOLTAGE/BLDC_PHASE_RESISTANCE;
+	driver->speed_reg.lim_max = BLDC_MAX_VOLTAGE/BLDC_PHASE_RESISTANCE;
+	driver->pos_reg.lim_min = -6000; 		/* ˚/s */
+	driver->pos_reg.lim_max = 6000;		/* ˚/s */
+
+	/* d-regulator */
+	driver->d_reg.Kp = 1.0f;
+	driver->d_reg.Ki = 0.0f;
+	driver->d_reg.Kd = 0.0f;
+	/* q-regulator */
+	driver->q_reg.Kp = 1.0f;
+	driver->q_reg.Ki = 0.0f;
+	driver->q_reg.Kd = 0.0f;
+
+	/* speed regulator */
+	driver->speed_reg.Kp = 0.2785f;
+	driver->speed_reg.Ki = 10.0f;
+	driver->speed_reg.Kd = 0.0f;
+
+	/* position regulator */
+	driver->pos_reg.Kp = 20.0f;
+	driver->pos_reg.Ki = 0.0f;
+	driver->pos_reg.Kd = 0.0f;
+
+	/* LPF config */
+	lpf_init(&driver->LPF_current_d, 0.005f);
+	lpf_init(&driver->LPF_current_q, 0.005f);
+	lpf_init(&driver->LPF_velocity, 0.005f);
+	lpf_init(&driver->LPF_angle, 0.005f);
 
 	HAL_TIM_PWM_Start(driver->timer, driver->pwm_ch1);
 	HAL_TIM_PWM_Start(driver->timer, driver->pwm_ch2);
 	HAL_TIM_PWM_Start(driver->timer, driver->pwm_ch3);
+
+	/* Calculate PWM period */
+	driver->pwm_period = driver->timer->Init.Period + 1;
 
 	return 1;
 
@@ -57,15 +89,28 @@ uint8_t drv8313_init(MotorDriver *driver, TIM_HandleTypeDef *htim) {
  * @param duty cycle on phase c
  */
 void drv8313_setPWM(MotorDriver *driver, float duty_a, float duty_b, float duty_c) {
-	uint16_t period = driver->timer->Init.Period + 1;
 
 	/* Wait for PWM period to finish before setting new duty period
 	 * Note: May be unnecessary, but used as a safety measure for now */
-	while(driver->timer->Instance->CNT != 0){
-	}
+//	while(driver->timer->Instance->CNT != 0){
+//	}
 
-	driver->timer->Instance->CCR1 = duty_a * period;
-	driver->timer->Instance->CCR2 = duty_b * period;
-	driver->timer->Instance->CCR3 = duty_c * period;
+	driver->timer->Instance->CCR1 = duty_a * driver->pwm_period;
+	driver->timer->Instance->CCR2 = duty_b * driver->pwm_period;
+	driver->timer->Instance->CCR3 = duty_c * driver->pwm_period;
 }
+
+void drv8313_setPWM2(MotorDriver *driver, TIM_TypeDef *tim_instance, float duty_a, float duty_b, float duty_c) {
+
+	/* Wait for PWM period to finish before setting new duty period
+	 * Note: May be unnecessary, but used as a safety measure for now */
+//	while(tim_instance->CNT != 0){
+//	}
+
+	tim_instance->CCR1 = duty_a * driver->pwm_period;
+	tim_instance->CCR2 = duty_b * driver->pwm_period;
+	tim_instance->CCR3 = duty_c * driver->pwm_period;
+}
+
+
 
