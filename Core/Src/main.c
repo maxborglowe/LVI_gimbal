@@ -324,7 +324,7 @@ int main(void)
 			/* get phase currents on each motor */
 			MotorX.i_a = (adc_read[0]*adc_ratio*adc_ref - ina_ref)*sense_ratio;
 			MotorX.i_b = (adc_read[1]*adc_ratio*adc_ref - ina_ref)*sense_ratio;
-			foc_update(&MotorX, 180);
+			foc_update(&MotorX, MotorY.angle);
 
 //
 			MotorY.i_a = (adc_read[3]*adc_ratio*adc_ref - ina_ref)*sense_ratio;

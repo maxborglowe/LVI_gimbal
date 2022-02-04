@@ -27,8 +27,6 @@ uint16_t as5048a_read(uint16_t ss, uint16_t reg) {
 	}
 	HAL_GPIO_WritePin(GPIOB, ss, GPIO_PIN_SET);
 
-	//HAL_Delay(1);
-
 	HAL_GPIO_WritePin(GPIOB, ss, GPIO_PIN_RESET);
 	HAL_SPI_Receive(&hspi1, (uint8_t*) &data, 2, 0xFFFF);
 	while (HAL_SPI_GetState(&hspi1) != HAL_SPI_STATE_READY) {
@@ -56,36 +54,23 @@ void as5048a_init(MotorDriver *driver) {
 
 	as5048a_getAngle(driver);
 
-	HAL_Delay(1);
-
 	lpf_init(&driver->LPF_angle_measure, 0.005);
 }
 
 /*
- * @brief Normalized the input angle, meaning that the angle starts at 0˚ and ends at 360˚
+ * @brief Normalizes input angle to range between -PI to PI.
  * @param unnormalized input angle
  */
 float as5048a_normalize(float angle) {
-	angle += 180;
-	angle = fmod(angle, 360);
-	if (angle < 0) {
-		angle += 360;
-	}
-	angle -= 180;
-	return angle;
-}
-
-/*
- * @brief Normalized the input angle, meaning that the angle starts at 0 and ends at 2PI
- * @param unnormalized input angle
- */
-float as5048a_normalizeRad(float angle) {
 	angle += _PI;
 	angle = fmod(angle, _2PI);
-	if (angle < 0) angle += _2PI;
+	if (angle < 0) {
+		angle += _2PI;
+	}
 	angle -= _PI;
 	return angle;
 }
+
 
 
 /*
@@ -94,22 +79,14 @@ float as5048a_normalizeRad(float angle) {
  * @param input angle
  */
 void as5048a_setZeroArg(MotorDriver *driver, float arg_pos) {
-	driver->zero_pos = fmod(arg_pos, 360);
+	driver->zero_pos = fmod(arg_pos, _2PI);
 }
 
 /*
- * @brief Convert raw data from getRawRotation to angles in degrees.
+ * @brief Convert raw data from getRawRotation to angles in radians.
  * @param Raw angular data input.
  */
 float as5048a_readToAngle(uint16_t angle) {
-	return 2 * ((float) angle * (360.0f * _1_16384) - 180);
-}
-
-/*
- * @brief Convert raw data from getRawRotation to angles in degrees.
- * @param Raw angular data input.
- */
-float as5048a_readToAngleRad(uint16_t angle) {
 	return 2 * ((float) angle * (_2PI * _1_16384) - _PI);
 }
 
@@ -134,14 +111,6 @@ void as5048a_getAngle(MotorDriver *driver) {
 	driver->angle = lpf_exec(&driver->LPF_angle_measure, as5048a_normalize(angle));
 }
 
-/** @brief Get angle from encoder on selected motor.
- *
- */
-void as5048a_getAngleRad(MotorDriver *driver) {
-	float angle = as5048a_readToAngleRad(as5048a_getRawRotation(driver->PIN_ENC)); //- driver->zero_pos_map;
-	driver->angle = lpf_exec(&driver->LPF_angle_measure, as5048a_normalizeRad(angle));
-}
-
 /**
  * @brief Set zero angle from current angle
  */
@@ -162,7 +131,7 @@ void as5048a_getVelocity(MotorDriver *driver){
 	if(T_samp <= 0 || T_samp > 0.5f) T_samp = 1e-3;
 
 	/* Calculate difference between current and previous angles */
-	float angle_diff = fabs(fmod(driver->angle - driver->prev_angle + 180, 360) - 180);
+	float angle_diff = fmod(driver->angle - driver->prev_angle + _PI, _2PI) - _PI;
 
 	/* Calculate velocity */
 	driver->velocity = angle_diff/T_samp;

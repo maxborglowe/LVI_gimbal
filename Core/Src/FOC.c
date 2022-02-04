@@ -9,7 +9,7 @@
 
 float cos_val, sin_val;
 uint16_t move_counter = 0;
-uint16_t move_exec = 1;
+uint16_t move_exec = 5;
 
 //const int sine_array[200] = {0,79,158,237,316,395,473,552,631,710,789,867,946,1024,1103,1181,1260,1338,1416,1494,1572,1650,1728,1806,1883,1961,2038,2115,2192,2269,2346,2423,2499,2575,2652,2728,2804,2879,2955,3030,3105,3180,3255,3329,3404,3478,3552,3625,3699,3772,3845,3918,3990,4063,4135,4206,4278,4349,4420,4491,4561,4631,4701,4770,4840,4909,4977,5046,5113,5181,5249,5316,5382,5449,5515,5580,5646,5711,5775,5839,5903,5967,6030,6093,6155,6217,6279,6340,6401,6461,6521,6581,6640,6699,6758,6815,6873,6930,6987,7043,7099,7154,7209,7264,7318,7371,7424,7477,7529,7581,7632,7683,7733,7783,7832,7881,7930,7977,8025,8072,8118,8164,8209,8254,8298,8342,8385,8428,8470,8512,8553,8594,8634,8673,8712,8751,8789,8826,8863,8899,8935,8970,9005,9039,9072,9105,9138,9169,9201,9231,9261,9291,9320,9348,9376,9403,9429,9455,9481,9506,9530,9554,9577,9599,9621,9642,9663,9683,9702,9721,9739,9757,9774,9790,9806,9821,9836,9850,9863,9876,9888,9899,9910,9920,9930,9939,9947,9955,9962,9969,9975,9980,9985,9989,9992,9995,9997,9999,10000,10000};
 
@@ -48,8 +48,8 @@ void foc_ClarkePark(MotorDriver *driver) {
 	float i_beta = (driver->i_a + 2*driver->i_b)*_1_SQRT3;
 
 
-	sin_val = sin(driver->angle_electrical*DEG_TO_RAD);
-	cos_val = cos(driver->angle_electrical*DEG_TO_RAD);
+	sin_val = sin(driver->angle_electrical);
+	cos_val = cos(driver->angle_electrical);
 
 	/* Park-transform */
 	driver->i_d = i_alpha*cos_val + i_beta*sin_val;
@@ -100,9 +100,9 @@ void foc_ClarkePark(MotorDriver *driver) {
  * @brief Derive the electrical angle from rotor mechanical angle and amount of pole-pairs
  */
 void foc_getElectricalAngle(MotorDriver *driver){
-	float offset = 0.0f;
+	float offset = 0*DEG_TO_RAD;
 	/* Derive electrical angle by multiplying mech. angle by pole-pair amount (and modulus 360˚)*/
-	driver->angle_electrical = driver->pole_pairs * driver->angle + offset - 180.0f;
+	driver->angle_electrical = fmod(driver->pole_pairs * driver->angle + offset - _PI, _2PI);
 }
 
 /**
@@ -114,11 +114,11 @@ void foc_getElectricalAngle(MotorDriver *driver){
  * 	  Speed regulator --> Vqref --> q-regulator
  * 	  Vdref = 0 --> d-regulator
  * 4. Do inverse Park-transform
+ * 5. SVPWM algorithm
  */
 void foc_update(MotorDriver *driver, float target){
 
-
-	if(move_counter == 0){
+	if(!move_counter){
 		/* Read mechanical angle */
 		as5048a_getAngle(driver);
 		/* Get the electrical angle*/
@@ -130,17 +130,12 @@ void foc_update(MotorDriver *driver, float target){
 		/* PI control: (Position -->) Velocity --> Direct + Quadrature*/
 		as5048a_getVelocity(driver);
 		foc_pi_control(driver, target);
-
-
 	}
+	move_counter = (move_counter + 1) % move_exec;
 
-//	foc_invPark(driver);
 
-//	foc_setPhaseVoltage2(driver);
+	/* SVPWM */
 	foc_setPhaseVoltage(driver, driver->V_d, driver->V_q);
-
-	move_counter++;
-	move_counter %= move_exec;
 
 }
 
@@ -186,7 +181,7 @@ void foc_setPhaseVoltage(MotorDriver *driver, float V_alpha, float V_beta){
 	float m = _SQRT3 * V_ref * _1_Vdc;
 //	float theta = fmod(atan2(V_beta, V_alpha) + _2PI, _2PI);
 	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_12, SET);
-	float theta = _normalizeAngle(driver->angle_electrical*DEG_TO_RAD + atan2(V_beta, V_alpha));
+	float theta = _normalizeAngle(driver->angle_electrical + atan2(V_beta, V_alpha));
 	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_12, !SET);
 
 	/*Sector selection*/
@@ -234,6 +229,6 @@ void foc_setPhaseVoltage(MotorDriver *driver, float V_alpha, float V_beta){
 		}
 
 
-	drv8313_setPWM2(driver, driver->timer->Instance, a_duty, b_duty, c_duty);
+	drv8313_setPWM(driver, driver->timer->Instance, a_duty, b_duty, c_duty);
 }
 

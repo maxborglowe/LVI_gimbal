@@ -55,7 +55,6 @@ typedef struct MotorDriver{
 } MotorDriver;
 
 uint8_t drv8313_init(MotorDriver *driver, TIM_HandleTypeDef *htim);
-void drv8313_setPWM(MotorDriver *driver, float duty_a, float duty_b, float duty_c);
-void drv8313_setPWM2(MotorDriver *driver, TIM_TypeDef *tim_instance, float duty_a, float duty_b, float duty_c);
+void drv8313_setPWM(MotorDriver *driver, TIM_TypeDef *tim_instance, float duty_a, float duty_b, float duty_c);
 
 #endif /* INC_DRV8313_H_ */

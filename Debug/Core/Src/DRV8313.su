@@ -1,3 +1,2 @@
 DRV8313.c:20:9:drv8313_init	16	static
-DRV8313.c:91:6:drv8313_setPWM	0	static
-DRV8313.c:103:6:drv8313_setPWM2	0	static
+DRV8313.c:94:6:drv8313_setPWM	0	static

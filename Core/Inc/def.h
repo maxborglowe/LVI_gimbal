@@ -27,8 +27,8 @@
 //######################################
 
 /* Math stuff */
+#define _sign(a) ( ( (a) < 0 )  ?  -1   : ( (a) > 0 ) )
 #define _round(x) ((x)>=0?(long)((x)+0.5f):(long)((x)-0.5f))
-#define _sqrt(a) (_sqrtApprox(a))
 #define _constrain(amt,low,high) ((amt)<(low)?(low):((amt)>(high)?(high):(amt)))
 
 #define AXIS_X 0
