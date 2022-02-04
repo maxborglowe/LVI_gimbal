@@ -1,8 +1,13 @@
 "./Core/Src/AS5048A.o"
 "./Core/Src/BMI270.o"
 "./Core/Src/DRV8313.o"
+<<<<<<< HEAD:Debug/objects.list
 "./Core/Src/FOC.o"
 "./Core/Src/LowPassFilter.o"
+=======
+"./Core/Src/I2C.o"
+"./Core/Src/ICM20602.o"
+>>>>>>> 26af4804f429aa13389f90c04332cd7e0c0d610c:BLDC_Gimbal1/Debug/objects.list
 "./Core/Src/Quaternions.o"
 "./Core/Src/main.o"
 "./Core/Src/pid.o"

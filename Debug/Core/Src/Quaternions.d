@@ -31,7 +31,14 @@ Core/Src/Quaternions.o: ../Core/Src/Quaternions.c \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_spi.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim_ex.h \
+<<<<<<< HEAD:Debug/Core/Src/Quaternions.d
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h
+=======
+ ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h \
+ ../Core/Inc/ICM20602.h ../Core/Inc/I2C.h ../Core/Inc/BMI270.h \
+ ../Core/Inc/I2C.h ../Core/Inc/AS5048A.h ../Core/Inc/Quaternions.h \
+ ../Core/Inc/DRV8313.h ../Core/Inc/def.h ../Core/Inc/def.h
+>>>>>>> 26af4804f429aa13389f90c04332cd7e0c0d610c:BLDC_Gimbal1/Debug/Core/Src/main.d
 
 ../Core/Inc/Quaternions.h:
 
@@ -96,7 +103,32 @@ Core/Src/Quaternions.o: ../Core/Src/Quaternions.c \
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_spi.h:
 
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim.h:
+<<<<<<< HEAD:Debug/Core/Src/Quaternions.d
+=======
 
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim_ex.h:
 
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h:
+
+../Core/Inc/ICM20602.h:
+
+../Core/Inc/I2C.h:
+
+../Core/Inc/BMI270.h:
+>>>>>>> 26af4804f429aa13389f90c04332cd7e0c0d610c:BLDC_Gimbal1/Debug/Core/Src/main.d
+
+../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim_ex.h:
+
+<<<<<<< HEAD:Debug/Core/Src/Quaternions.d
+../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h:
+=======
+../Core/Inc/AS5048A.h:
+
+../Core/Inc/Quaternions.h:
+
+../Core/Inc/DRV8313.h:
+
+../Core/Inc/def.h:
+
+../Core/Inc/def.h:
+>>>>>>> 26af4804f429aa13389f90c04332cd7e0c0d610c:BLDC_Gimbal1/Debug/Core/Src/main.d

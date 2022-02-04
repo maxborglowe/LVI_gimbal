@@ -1,0 +1,4 @@
+Quaternions.c:14:6:setSampleFreq	8	static
+Quaternions.c:27:6:filterUpdate	120	static
+Quaternions.c:106:20:ToEulerAngles	80	static
+Quaternions.c:131:7:invSqrt	32	static

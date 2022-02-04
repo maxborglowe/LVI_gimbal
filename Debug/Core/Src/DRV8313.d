@@ -25,14 +25,23 @@ Core/Src/DRV8313.o: ../Core/Src/DRV8313.c ../Core/Inc/DRV8313.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_flash.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_flash_ex.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_flash_ramfunc.h \
+<<<<<<< HEAD
+=======
+ ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_i2c.h \
+ ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_i2c_ex.h \
+>>>>>>> 26af4804f429aa13389f90c04332cd7e0c0d610c
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pwr.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pwr_ex.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_spi.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim_ex.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h \
+<<<<<<< HEAD
  ../Core/Inc/def.h ../Core/Inc/Quaternions.h ../Core/Inc/pid.h \
  ../Core/Inc/time_utils.h ../Core/Inc/LowPassFilter.h
+=======
+ ../Core/Inc/def.h
+>>>>>>> 26af4804f429aa13389f90c04332cd7e0c0d610c
 
 ../Core/Inc/DRV8313.h:
 
@@ -88,6 +97,13 @@ Core/Src/DRV8313.o: ../Core/Src/DRV8313.c ../Core/Inc/DRV8313.h \
 
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_flash_ramfunc.h:
 
+<<<<<<< HEAD
+=======
+../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_i2c.h:
+
+../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_i2c_ex.h:
+
+>>>>>>> 26af4804f429aa13389f90c04332cd7e0c0d610c
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pwr.h:
 
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pwr_ex.h:
@@ -101,6 +117,7 @@ Core/Src/DRV8313.o: ../Core/Src/DRV8313.c ../Core/Inc/DRV8313.h \
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h:
 
 ../Core/Inc/def.h:
+<<<<<<< HEAD
 
 ../Core/Inc/Quaternions.h:
 
@@ -109,3 +126,5 @@ Core/Src/DRV8313.o: ../Core/Src/DRV8313.c ../Core/Inc/DRV8313.h \
 ../Core/Inc/time_utils.h:
 
 ../Core/Inc/LowPassFilter.h:
+=======
+>>>>>>> 26af4804f429aa13389f90c04332cd7e0c0d610c

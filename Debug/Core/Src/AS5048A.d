@@ -32,7 +32,11 @@ Core/Src/AS5048A.o: ../Core/Src/AS5048A.c ../Core/Inc/AS5048A.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim_ex.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h \
+<<<<<<< HEAD:Debug/Core/Src/AS5048A.d
  ../Core/Inc/pid.h ../Core/Inc/time_utils.h ../Core/Inc/LowPassFilter.h
+=======
+ ../Core/Inc/def.h
+>>>>>>> 26af4804f429aa13389f90c04332cd7e0c0d610c:BLDC_Gimbal1/Debug/Core/Src/AS5048A.d
 
 ../Core/Inc/AS5048A.h:
 
@@ -106,8 +110,12 @@ Core/Src/AS5048A.o: ../Core/Src/AS5048A.c ../Core/Inc/AS5048A.h \
 
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h:
 
+<<<<<<< HEAD:Debug/Core/Src/AS5048A.d
 ../Core/Inc/pid.h:
 
 ../Core/Inc/time_utils.h:
 
 ../Core/Inc/LowPassFilter.h:
+=======
+../Core/Inc/def.h:
+>>>>>>> 26af4804f429aa13389f90c04332cd7e0c0d610c:BLDC_Gimbal1/Debug/Core/Src/AS5048A.d

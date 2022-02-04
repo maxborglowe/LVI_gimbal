@@ -8,8 +8,13 @@ C_SRCS += \
 ../Core/Src/AS5048A.c \
 ../Core/Src/BMI270.c \
 ../Core/Src/DRV8313.c \
+<<<<<<< HEAD:Debug/Core/Src/subdir.mk
 ../Core/Src/FOC.c \
 ../Core/Src/LowPassFilter.c \
+=======
+../Core/Src/I2C.c \
+../Core/Src/ICM20602.c \
+>>>>>>> 26af4804f429aa13389f90c04332cd7e0c0d610c:BLDC_Gimbal1/Debug/Core/Src/subdir.mk
 ../Core/Src/Quaternions.c \
 ../Core/Src/main.c \
 ../Core/Src/pid.c \
@@ -24,8 +29,13 @@ OBJS += \
 ./Core/Src/AS5048A.o \
 ./Core/Src/BMI270.o \
 ./Core/Src/DRV8313.o \
+<<<<<<< HEAD:Debug/Core/Src/subdir.mk
 ./Core/Src/FOC.o \
 ./Core/Src/LowPassFilter.o \
+=======
+./Core/Src/I2C.o \
+./Core/Src/ICM20602.o \
+>>>>>>> 26af4804f429aa13389f90c04332cd7e0c0d610c:BLDC_Gimbal1/Debug/Core/Src/subdir.mk
 ./Core/Src/Quaternions.o \
 ./Core/Src/main.o \
 ./Core/Src/pid.o \
@@ -40,8 +50,13 @@ C_DEPS += \
 ./Core/Src/AS5048A.d \
 ./Core/Src/BMI270.d \
 ./Core/Src/DRV8313.d \
+<<<<<<< HEAD:Debug/Core/Src/subdir.mk
 ./Core/Src/FOC.d \
 ./Core/Src/LowPassFilter.d \
+=======
+./Core/Src/I2C.d \
+./Core/Src/ICM20602.d \
+>>>>>>> 26af4804f429aa13389f90c04332cd7e0c0d610c:BLDC_Gimbal1/Debug/Core/Src/subdir.mk
 ./Core/Src/Quaternions.d \
 ./Core/Src/main.d \
 ./Core/Src/pid.d \

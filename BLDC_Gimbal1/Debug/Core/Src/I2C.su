@@ -1,0 +1,4 @@
+I2C.c:16:19:i2c_write	32	static
+I2C.c:31:19:i2c_read_8	40	static
+I2C.c:51:19:i2c_read_16	40	static
+I2C.c:71:9:i2c_master_read	32	static

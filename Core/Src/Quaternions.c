@@ -12,6 +12,7 @@
 /*
  * @brief Set the sample frequency based on the while loop cycle time (in milliseconds)
  */
+<<<<<<< HEAD:Core/Src/Quaternions.c
 void setSampleFreq_ms() {
 	sampleFreq = 1 / (1e-3 * while_t);
 }
@@ -23,6 +24,10 @@ void setSampleFreq_us() {
 
 	sampleFreq = 1 / get_us();
 //	sampleFreq = 1 / (1e-6 * us_t);
+=======
+void setSampleFreq() {
+	sampleFreq = 1 / (0.001 * while_t);
+>>>>>>> 26af4804f429aa13389f90c04332cd7e0c0d610c:BLDC_Gimbal1/Core/Src/Quaternions.c
 }
 
 /*
@@ -118,7 +123,11 @@ struct EulerAngles ToEulerAngles(float _q0, float _q1, float _q2, float _q3) {
 
 	// roll (x-axis rotation)
 	angles.x = atan2(2 * (_q0 * _q1 + _q2 * _q3),
+<<<<<<< HEAD:Core/Src/Quaternions.c
 			_q0 * _q0 - _q1 * _q1 - _q2 * _q2 + _q3 * _q3);
+=======
+			1 - 2 * (_q1 * _q1 + _q2 * _q2));
+>>>>>>> 26af4804f429aa13389f90c04332cd7e0c0d610c:BLDC_Gimbal1/Core/Src/Quaternions.c
 
 	// pitch (y-axis rotation)
 	angles.y = -asin(2 * (_q1 * _q3 - _q0 * _q2));
@@ -130,7 +139,11 @@ struct EulerAngles ToEulerAngles(float _q0, float _q1, float _q2, float _q3) {
 
 	// yaw (z-axis rotation)
 	angles.z = atan2(2 * (_q0 * _q3 + _q1 * _q2),
+<<<<<<< HEAD:Core/Src/Quaternions.c
 			_q0 * _q0 + _q1 * _q1 - _q2 * _q2 - _q3 * _q3);
+=======
+			1 - 2 * (_q2 * _q2 + _q3 * _q3));
+>>>>>>> 26af4804f429aa13389f90c04332cd7e0c0d610c:BLDC_Gimbal1/Core/Src/Quaternions.c
 
 	return angles;
 }
