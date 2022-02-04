@@ -58,6 +58,7 @@ uint8_t drv8313_init(MotorDriver *driver, TIM_HandleTypeDef *htim) {
 	driver->speed_reg.Kp = 0.2785f;
 	driver->speed_reg.Ki = 10.0f;
 	driver->speed_reg.Kd = 0.0f;
+	/**/
 
 	/* position regulator */
 	driver->pos_reg.Kp = 20.0f;
