@@ -44,8 +44,8 @@ uint8_t drv8313_init(MotorDriver *driver, TIM_HandleTypeDef *htim) {
 	driver->speed_reg.lim_max = BLDC_MAX_VOLTAGE/BLDC_PHASE_RESISTANCE;
 //	driver->pos_reg.lim_min = -6000; 		/* ˚/s */
 //	driver->pos_reg.lim_max = 6000;		/* ˚/s */
-	driver->pos_reg.lim_min = -104.7; 		/* rad/s */
-	driver->pos_reg.lim_max = 104.7;		/* rad/s */
+	driver->pos_reg.lim_min = -20; 		/* rad/s */
+	driver->pos_reg.lim_max = 20;		/* rad/s */
 
 	/* d-regulator */
 	driver->d_reg.Kp = 2.0f;
@@ -63,9 +63,9 @@ uint8_t drv8313_init(MotorDriver *driver, TIM_HandleTypeDef *htim) {
 	/**/
 
 	/* position regulator */
-	driver->pos_reg.Kp = 30.0f;
+	driver->pos_reg.Kp = 20.0f;
 	driver->pos_reg.Ki = 0.0f;
-	driver->pos_reg.Kd = 0.0f;
+	driver->pos_reg.Kd = 0.25f;
 
 	/* LPF config */
 	lpf_init(&driver->LPF_current_d, 0.01f);

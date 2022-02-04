@@ -54,7 +54,7 @@ void as5048a_init(MotorDriver *driver) {
 
 	as5048a_getAngle(driver);
 
-	lpf_init(&driver->LPF_angle_measure, 0.005);
+	lpf_init(&driver->LPF_angle_measure, 0.005f);
 }
 
 /*

@@ -207,6 +207,35 @@ int main(void)
 	MotorY.PIN_ENC = PIN_ENC_Y;
 	MotorZ.PIN_ENC = PIN_ENC_Z;
 
+	if (USE_BMI270) {
+		bmi270_spi_init();
+		if (!USE_IMU_VIS) {
+			bmi270_spi_init_check();
+		}
+
+		bmi270_pwr_conf(BMI270_PWR_MODE_PERF);
+		bmi270_spi_write_8(REG_GYR_RANGE, range_2000);
+		bmi270_spi_write_8(REG_ACC_RANGE, range_8g);
+
+		bmi270_getGyroRange(&Imu);
+		bmi270_getAccelRange(&Imu);
+
+		bmi270_calibrateInit(&Imu, 0);
+
+		Imu.gyr_odr = gyr_odr_25; /* Set gyro 3dB LP-filter cutoff to 50Hz */
+		Imu.gyr_bwp = gyr_osr2;
+		Imu.gyr_noise_perf = gyr_ulp;
+		Imu.gyr_filter_perf = gyr_ulp;
+		bmi270_setGyroConf(&Imu);
+		bmi270_getGyroConf(&Imu);
+
+		Imu.acc_odr = acc_odr_12p5; /* Set accel 3dB LP-filter cutoff to 50Hz */
+		Imu.acc_bwp = acc_res_avg128;
+		Imu.acc_filter_perf = acc_ulp;
+		bmi270_setAccConf(&Imu);
+		bmi270_getAccConf(&Imu);
+	}
+
 	if (USE_AS5048A) {
 		/* Initialize encoders for each motor*/
 		as5048a_init(&MotorX);
@@ -256,34 +285,7 @@ int main(void)
 
 	}
 
-	if (USE_BMI270) {
-		bmi270_spi_init();
-		if (!USE_IMU_VIS) {
-			bmi270_spi_init_check();
-		}
 
-		bmi270_pwr_conf(BMI270_PWR_MODE_PERF);
-		bmi270_spi_write_8(REG_GYR_RANGE, range_2000);
-		bmi270_spi_write_8(REG_ACC_RANGE, range_8g);
-
-		bmi270_getGyroRange(&Imu);
-		bmi270_getAccelRange(&Imu);
-
-		bmi270_calibrateInit(&Imu, 0);
-
-		Imu.gyr_odr = gyr_odr_25; /* Set gyro 3dB LP-filter cutoff to 50Hz */
-		Imu.gyr_bwp = gyr_osr2;
-		Imu.gyr_noise_perf = gyr_ulp;
-		Imu.gyr_filter_perf = gyr_ulp;
-		bmi270_setGyroConf(&Imu);
-		bmi270_getGyroConf(&Imu);
-
-		Imu.acc_odr = acc_odr_12p5; /* Set accel 3dB LP-filter cutoff to 50Hz */
-		Imu.acc_bwp = acc_res_avg128;
-		Imu.acc_filter_perf = acc_ulp;
-		bmi270_setAccConf(&Imu);
-		bmi270_getAccConf(&Imu);
-	}
 
 
 

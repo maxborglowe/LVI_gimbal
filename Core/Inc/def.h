@@ -19,7 +19,7 @@
 //######################################
 #define USE_SIM 0
 #define USE_ICM20602 0
-#define USE_BMI270 0
+#define USE_BMI270 1
 #define USE_AS5048A 1
 #define USE_DRV8313 1
 #define USE_PRINT 0

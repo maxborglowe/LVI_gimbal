@@ -57,6 +57,7 @@ float PID_Update(struct PID *pid, float setpoint, float meas) {
 
 	pid->integrator = _constrain(pid->integrator, pid->lim_min, pid->lim_max);
 
+
 	/* Clamp integrator -> prevents integrator from growing out of proportions */
 //	if (pid->integrator > lim_max_int) {
 //		pid->integrator = lim_max_int;
@@ -64,10 +65,11 @@ float PID_Update(struct PID *pid, float setpoint, float meas) {
 //		pid->integrator = lim_min_int;
 //	}
 
-	/* Derivative: not necessary for FOC */
+	/* Derivative: might not be necessary for FOC */
+	pid->differentiator = pid->Kd * (err - pid->prevErr)/Ts;
 
 	/* Output */
-	pid->out = prop + pid->integrator;
+	pid->out = prop + pid->integrator + pid->differentiator;
 
 	/* Limiter */
 //	if (pid->out > pid->lim_max) {

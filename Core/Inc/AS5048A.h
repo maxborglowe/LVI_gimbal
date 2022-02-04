@@ -27,13 +27,6 @@
 extern SPI_HandleTypeDef hspi1;
 extern UART_HandleTypeDef huart2;
 
-extern char *buff[BUFF_SIZE];
-extern uint16_t curr_angle[AMT_MOTORS];
-extern float curr_angle_map[AMT_MOTORS];
-extern uint16_t zero_pos[AMT_MOTORS];
-extern float zero_pos_map[AMT_MOTORS];
-float angle[AMT_MOTORS];
-
 void as5048a_setZeroArg(MotorDriver *driver, float arg_pos);
 void as5048a_setZero(MotorDriver *driver);
 void as5048a_init(MotorDriver *driver);
