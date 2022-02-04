@@ -41,11 +41,11 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, READONLY, DEBUGGING, OCTETS
  18 .debug_line   0001fe39  00000000  00000000  0007a800  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 19 .debug_str    0009e24a  00000000  00000000  0009a639  2**0
+ 19 .debug_str    0009e216  00000000  00000000  0009a639  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 20 .comment      00000053  00000000  00000000  00138883  2**0
+ 20 .comment      00000053  00000000  00000000  0013884f  2**0
                   CONTENTS, READONLY
- 21 .debug_frame  000045c0  00000000  00000000  001388d8  2**2
+ 21 .debug_frame  000045c0  00000000  00000000  001388a4  2**2
                   CONTENTS, READONLY, DEBUGGING, OCTETS
 
 Disassembly of section .text:
@@ -1973,7 +1973,7 @@ void foc_pi_control(MotorDriver *driver, float target){
  80014c6:	bd10      	pop	{r4, pc}
 	...
 
-080014d0 <foc_setPhaseVoltage3>:
+080014d0 <foc_setPhaseVoltage>:
 
 
 	float V_ref, a_duty = 0, b_duty = 0, c_duty = 0;
@@ -1981,13 +1981,13 @@ void foc_pi_control(MotorDriver *driver, float target){
 
 	V_ref = sqrtApprox(V_alpha * V_alpha + V_beta * V_beta);
  80014d0:	ee60 7aa0 	vmul.f32	s15, s1, s1
-void foc_setPhaseVoltage3(MotorDriver *driver, float V_alpha, float V_beta){
+void foc_setPhaseVoltage(MotorDriver *driver, float V_alpha, float V_beta){
  80014d4:	b5f0      	push	{r4, r5, r6, r7, lr}
 	V_ref = sqrtApprox(V_alpha * V_alpha + V_beta * V_beta);
  80014d6:	eee0 7a00 	vfma.f32	s15, s0, s0
   i = 0x5f375a86 - ( i >> 1 );
- 80014da:	4bcf      	ldr	r3, [pc, #828]	; (8001818 <foc_setPhaseVoltage3+0x348>)
-void foc_setPhaseVoltage3(MotorDriver *driver, float V_alpha, float V_beta){
+ 80014da:	4bcf      	ldr	r3, [pc, #828]	; (8001818 <foc_setPhaseVoltage+0x348>)
+void foc_setPhaseVoltage(MotorDriver *driver, float V_alpha, float V_beta){
  80014dc:	4605      	mov	r5, r0
   i = 0x5f375a86 - ( i >> 1 );
  80014de:	ee17 2a90 	vmov	r2, s15
@@ -1997,20 +1997,20 @@ void foc_setPhaseVoltage3(MotorDriver *driver, float V_alpha, float V_beta){
 
 	float m = _SQRT3 * V_ref * _1_Vdc;
  80014e6:	ee07 0a10 	vmov	s14, r0
-void foc_setPhaseVoltage3(MotorDriver *driver, float V_alpha, float V_beta){
+void foc_setPhaseVoltage(MotorDriver *driver, float V_alpha, float V_beta){
  80014ea:	ed2d 8b04 	vpush	{d8-d9}
 	float m = _SQRT3 * V_ref * _1_Vdc;
  80014ee:	ee67 7a87 	vmul.f32	s15, s15, s14
-void foc_setPhaseVoltage3(MotorDriver *driver, float V_alpha, float V_beta){
+void foc_setPhaseVoltage(MotorDriver *driver, float V_alpha, float V_beta){
  80014f2:	b083      	sub	sp, #12
 	float m = _SQRT3 * V_ref * _1_Vdc;
  80014f4:	ee17 0a90 	vmov	r0, s15
-void foc_setPhaseVoltage3(MotorDriver *driver, float V_alpha, float V_beta){
+void foc_setPhaseVoltage(MotorDriver *driver, float V_alpha, float V_beta){
  80014f8:	eeb0 8a60 	vmov.f32	s16, s1
  80014fc:	eef0 8a40 	vmov.f32	s17, s0
 	float m = _SQRT3 * V_ref * _1_Vdc;
  8001500:	f7ff f82a 	bl	8000558 <__aeabi_f2d>
- 8001504:	a3c0      	add	r3, pc, #768	; (adr r3, 8001808 <foc_setPhaseVoltage3+0x338>)
+ 8001504:	a3c0      	add	r3, pc, #768	; (adr r3, 8001808 <foc_setPhaseVoltage+0x338>)
  8001506:	e9d3 2300 	ldrd	r2, r3, [r3]
  800150a:	f7ff f87d 	bl	8000608 <__aeabi_dmul>
  800150e:	f7ff fb53 	bl	8000bb8 <__aeabi_d2f>
@@ -2021,14 +2021,14 @@ void foc_setPhaseVoltage3(MotorDriver *driver, float V_alpha, float V_beta){
  8001514:	4604      	mov	r4, r0
 	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_12, SET);
  8001516:	f44f 5180 	mov.w	r1, #4096	; 0x1000
- 800151a:	48c0      	ldr	r0, [pc, #768]	; (800181c <foc_setPhaseVoltage3+0x34c>)
+ 800151a:	48c0      	ldr	r0, [pc, #768]	; (800181c <foc_setPhaseVoltage+0x34c>)
 	/*Sector selection*/
 	uint8_t sector = theta * _3_PI + 1;
 
 
 	/* Duty time calculation */
 	T1 = m * sin(sector * _PI_3 - theta);
- 800151c:	eddf 9ac0 	vldr	s19, [pc, #768]	; 8001820 <foc_setPhaseVoltage3+0x350>
+ 800151c:	eddf 9ac0 	vldr	s19, [pc, #768]	; 8001820 <foc_setPhaseVoltage+0x350>
 	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_12, SET);
  8001520:	f002 f816 	bl	8003550 <HAL_GPIO_WritePin>
 	float theta = _normalizeAngle(driver->angle_electrical*DEG_TO_RAD + atan2(V_beta, V_alpha));
@@ -2044,7 +2044,7 @@ void foc_setPhaseVoltage3(MotorDriver *driver, float V_alpha, float V_beta){
  8001544:	ec41 0b10 	vmov	d0, r0, r1
  8001548:	f006 fb2e 	bl	8007ba8 <atan2>
  800154c:	ed95 7a51 	vldr	s14, [r5, #324]	; 0x144
- 8001550:	eddf 7ab4 	vldr	s15, [pc, #720]	; 8001824 <foc_setPhaseVoltage3+0x354>
+ 8001550:	eddf 7ab4 	vldr	s15, [pc, #720]	; 8001824 <foc_setPhaseVoltage+0x354>
  8001554:	ee67 7a27 	vmul.f32	s15, s14, s15
  8001558:	ec57 6b10 	vmov	r6, r7, d0
  800155c:	ee17 0a90 	vmov	r0, s15
@@ -2055,7 +2055,7 @@ void foc_setPhaseVoltage3(MotorDriver *driver, float V_alpha, float V_beta){
  800156c:	f7ff fb24 	bl	8000bb8 <__aeabi_d2f>
   float a = fmod(angle, _2PI);
  8001570:	f7fe fff2 	bl	8000558 <__aeabi_f2d>
- 8001574:	ed9f 1ba6 	vldr	d1, [pc, #664]	; 8001810 <foc_setPhaseVoltage3+0x340>
+ 8001574:	ed9f 1ba6 	vldr	d1, [pc, #664]	; 8001810 <foc_setPhaseVoltage+0x340>
  8001578:	ec41 0b10 	vmov	d0, r0, r1
  800157c:	f006 fb16 	bl	8007bac <fmod>
  8001580:	ec51 0b10 	vmov	r0, r1, d0
@@ -2065,9 +2065,9 @@ void foc_setPhaseVoltage3(MotorDriver *driver, float V_alpha, float V_beta){
  800158c:	eef5 8ac0 	vcmpe.f32	s17, #0.0
  8001590:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
  8001594:	bf48      	it	mi
- 8001596:	eddf 7aa4 	vldrmi	s15, [pc, #656]	; 8001828 <foc_setPhaseVoltage3+0x358>
+ 8001596:	eddf 7aa4 	vldrmi	s15, [pc, #656]	; 8001828 <foc_setPhaseVoltage+0x358>
 	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_12, !SET);
- 800159a:	48a0      	ldr	r0, [pc, #640]	; (800181c <foc_setPhaseVoltage3+0x34c>)
+ 800159a:	48a0      	ldr	r0, [pc, #640]	; (800181c <foc_setPhaseVoltage+0x34c>)
  800159c:	f04f 0200 	mov.w	r2, #0
  80015a0:	f44f 5180 	mov.w	r1, #4096	; 0x1000
   return a >= 0 ? a : (a + _2PI);
@@ -2078,7 +2078,7 @@ void foc_setPhaseVoltage3(MotorDriver *driver, float V_alpha, float V_beta){
 	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_12, !SET);
  80015ae:	f001 ffcf 	bl	8003550 <HAL_GPIO_WritePin>
 	uint8_t sector = theta * _3_PI + 1;
- 80015b2:	eddf 7a9e 	vldr	s15, [pc, #632]	; 800182c <foc_setPhaseVoltage3+0x35c>
+ 80015b2:	eddf 7a9e 	vldr	s15, [pc, #632]	; 800182c <foc_setPhaseVoltage+0x35c>
  80015b6:	eeb0 7a48 	vmov.f32	s14, s16
  80015ba:	eea8 7aa7 	vfma.f32	s14, s17, s15
 	T1 = m * sin(sector * _PI_3 - theta);
@@ -2132,7 +2132,7 @@ void foc_setPhaseVoltage3(MotorDriver *driver, float V_alpha, float V_beta){
 
 		switch (sector) {
  8001642:	2c05      	cmp	r4, #5
- 8001644:	f200 80d7 	bhi.w	80017f6 <foc_setPhaseVoltage3+0x326>
+ 8001644:	f200 80d7 	bhi.w	80017f6 <foc_setPhaseVoltage+0x326>
  8001648:	e8df f004 	tbb	[pc, r4]
  800164c:	9b7b633a 	.word	0x9b7b633a
  8001650:	03bb      	.short	0x03bb
@@ -2144,7 +2144,7 @@ void foc_setPhaseVoltage3(MotorDriver *driver, float V_alpha, float V_beta){
 				a_duty = T1 + T2 + T0*0.5;
  8001652:	ee18 0a10 	vmov	r0, s16
  8001656:	f7fe ff7f 	bl	8000558 <__aeabi_f2d>
- 800165a:	4b75      	ldr	r3, [pc, #468]	; (8001830 <foc_setPhaseVoltage3+0x360>)
+ 800165a:	4b75      	ldr	r3, [pc, #468]	; (8001830 <foc_setPhaseVoltage+0x360>)
  800165c:	2200      	movs	r2, #0
  800165e:	f7fe ffd3 	bl	8000608 <__aeabi_dmul>
  8001662:	4606      	mov	r6, r0
@@ -2193,7 +2193,7 @@ void foc_setPhaseVoltage3(MotorDriver *driver, float V_alpha, float V_beta){
 				a_duty = T1 + T2 + T0*0.5;
  80016c0:	ee18 0a10 	vmov	r0, s16
  80016c4:	f7fe ff48 	bl	8000558 <__aeabi_f2d>
- 80016c8:	4b59      	ldr	r3, [pc, #356]	; (8001830 <foc_setPhaseVoltage3+0x360>)
+ 80016c8:	4b59      	ldr	r3, [pc, #356]	; (8001830 <foc_setPhaseVoltage+0x360>)
  80016ca:	2200      	movs	r2, #0
  80016cc:	f7fe ff9c 	bl	8000608 <__aeabi_dmul>
  80016d0:	4606      	mov	r6, r0
@@ -2223,11 +2223,11 @@ void foc_setPhaseVoltage3(MotorDriver *driver, float V_alpha, float V_beta){
  8001708:	ee28 1a01 	vmul.f32	s2, s16, s2
 				break;
  800170c:	ed9d 0a00 	vldr	s0, [sp]
- 8001710:	e7cb      	b.n	80016aa <foc_setPhaseVoltage3+0x1da>
+ 8001710:	e7cb      	b.n	80016aa <foc_setPhaseVoltage+0x1da>
 				a_duty = T1 + T0*0.5;
  8001712:	ee18 0a10 	vmov	r0, s16
  8001716:	f7fe ff1f 	bl	8000558 <__aeabi_f2d>
- 800171a:	4b45      	ldr	r3, [pc, #276]	; (8001830 <foc_setPhaseVoltage3+0x360>)
+ 800171a:	4b45      	ldr	r3, [pc, #276]	; (8001830 <foc_setPhaseVoltage+0x360>)
  800171c:	2200      	movs	r2, #0
  800171e:	f7fe ff73 	bl	8000608 <__aeabi_dmul>
  8001722:	4606      	mov	r6, r0
@@ -2241,7 +2241,7 @@ void foc_setPhaseVoltage3(MotorDriver *driver, float V_alpha, float V_beta){
  800173a:	4603      	mov	r3, r0
 				b_duty = T1 + T2 + T0*0.5;
  800173c:	ee19 0a90 	vmov	r0, s19
- 8001740:	e7d5      	b.n	80016ee <foc_setPhaseVoltage3+0x21e>
+ 8001740:	e7d5      	b.n	80016ee <foc_setPhaseVoltage+0x21e>
 				a_duty = T0*0.5;
  8001742:	eeb6 0a00 	vmov.f32	s0, #96	; 0x3f000000  0.5
  8001746:	ee28 0a00 	vmul.f32	s0, s16, s0
@@ -2251,7 +2251,7 @@ void foc_setPhaseVoltage3(MotorDriver *driver, float V_alpha, float V_beta){
  800174e:	ed8d 0a01 	vstr	s0, [sp, #4]
 				b_duty = T1 + T2 + T0*0.5;
  8001752:	f7fe ff01 	bl	8000558 <__aeabi_f2d>
- 8001756:	4b36      	ldr	r3, [pc, #216]	; (8001830 <foc_setPhaseVoltage3+0x360>)
+ 8001756:	4b36      	ldr	r3, [pc, #216]	; (8001830 <foc_setPhaseVoltage+0x360>)
  8001758:	2200      	movs	r2, #0
  800175a:	f7fe ff55 	bl	8000608 <__aeabi_dmul>
  800175e:	4606      	mov	r6, r0
@@ -2266,7 +2266,7 @@ void foc_setPhaseVoltage3(MotorDriver *driver, float V_alpha, float V_beta){
  8001778:	ee00 3a90 	vmov	s1, r3
 				c_duty = T2 + T0*0.5;
  800177c:	ee18 0a90 	vmov	r0, s17
- 8001780:	e783      	b.n	800168a <foc_setPhaseVoltage3+0x1ba>
+ 8001780:	e783      	b.n	800168a <foc_setPhaseVoltage+0x1ba>
 				a_duty = T0*0.5;
  8001782:	eeb6 0a00 	vmov.f32	s0, #96	; 0x3f000000  0.5
  8001786:	ee28 0a00 	vmul.f32	s0, s16, s0
@@ -2276,7 +2276,7 @@ void foc_setPhaseVoltage3(MotorDriver *driver, float V_alpha, float V_beta){
  800178e:	ed8d 0a01 	vstr	s0, [sp, #4]
 				b_duty = T1 + T0*0.5;
  8001792:	f7fe fee1 	bl	8000558 <__aeabi_f2d>
- 8001796:	4b26      	ldr	r3, [pc, #152]	; (8001830 <foc_setPhaseVoltage3+0x360>)
+ 8001796:	4b26      	ldr	r3, [pc, #152]	; (8001830 <foc_setPhaseVoltage+0x360>)
  8001798:	2200      	movs	r2, #0
  800179a:	f7fe ff35 	bl	8000608 <__aeabi_dmul>
  800179e:	4606      	mov	r6, r0
@@ -2291,11 +2291,11 @@ void foc_setPhaseVoltage3(MotorDriver *driver, float V_alpha, float V_beta){
  80017b8:	ee00 3a90 	vmov	s1, r3
 				c_duty = T1 + T2 + T0*0.5;
  80017bc:	ee19 0a90 	vmov	r0, s19
- 80017c0:	e763      	b.n	800168a <foc_setPhaseVoltage3+0x1ba>
+ 80017c0:	e763      	b.n	800168a <foc_setPhaseVoltage+0x1ba>
 				a_duty = T2 + T0*0.5;
  80017c2:	ee18 0a10 	vmov	r0, s16
  80017c6:	f7fe fec7 	bl	8000558 <__aeabi_f2d>
- 80017ca:	4b19      	ldr	r3, [pc, #100]	; (8001830 <foc_setPhaseVoltage3+0x360>)
+ 80017ca:	4b19      	ldr	r3, [pc, #100]	; (8001830 <foc_setPhaseVoltage+0x360>)
  80017cc:	2200      	movs	r2, #0
  80017ce:	f7fe ff1b 	bl	8000608 <__aeabi_dmul>
  80017d2:	4606      	mov	r6, r0
@@ -2312,12 +2312,12 @@ void foc_setPhaseVoltage3(MotorDriver *driver, float V_alpha, float V_beta){
  80017ee:	4603      	mov	r3, r0
 				c_duty = T1 + T2 + T0*0.5;
  80017f0:	ee19 0a90 	vmov	r0, s19
- 80017f4:	e746      	b.n	8001684 <foc_setPhaseVoltage3+0x1b4>
+ 80017f4:	e746      	b.n	8001684 <foc_setPhaseVoltage+0x1b4>
 	T0 = 1 - T1 - T2;
- 80017f6:	ed9f 1a0f 	vldr	s2, [pc, #60]	; 8001834 <foc_setPhaseVoltage3+0x364>
+ 80017f6:	ed9f 1a0f 	vldr	s2, [pc, #60]	; 8001834 <foc_setPhaseVoltage+0x364>
  80017fa:	eef0 0a41 	vmov.f32	s1, s2
  80017fe:	eeb0 0a41 	vmov.f32	s0, s2
- 8001802:	e752      	b.n	80016aa <foc_setPhaseVoltage3+0x1da>
+ 8001802:	e752      	b.n	80016aa <foc_setPhaseVoltage+0x1da>
  8001804:	f3af 8000 	nop.w
  8001808:	c6f05b8e 	.word	0xc6f05b8e
  800180c:	3fc279a6 	.word	0x3fc279a6
@@ -2343,11 +2343,11 @@ void foc_update(MotorDriver *driver, float target){
  8001842:	4604      	mov	r4, r0
 	if(move_counter == 0){
  8001844:	b19b      	cbz	r3, 800186e <foc_update+0x36>
-	foc_setPhaseVoltage3(driver, driver->V_d, driver->V_q);
+	foc_setPhaseVoltage(driver, driver->V_d, driver->V_q);
  8001846:	edd4 0a05 	vldr	s1, [r4, #20]
  800184a:	ed94 0a06 	vldr	s0, [r4, #24]
  800184e:	4620      	mov	r0, r4
- 8001850:	f7ff fe3e 	bl	80014d0 <foc_setPhaseVoltage3>
+ 8001850:	f7ff fe3e 	bl	80014d0 <foc_setPhaseVoltage>
 	move_counter++;
  8001854:	882b      	ldrh	r3, [r5, #0]
 	move_counter %= move_exec;
@@ -5072,46 +5072,103 @@ uint32_t get_us(){
  800294e:	bd08      	pop	{r3, pc}
 
 08002950 <Reset_Handler>:
+
+    .section  .text.Reset_Handler
+  .weak  Reset_Handler
+  .type  Reset_Handler, %function
+Reset_Handler:  
+  ldr   sp, =_estack    		 /* set stack pointer */
  8002950:	f8df d034 	ldr.w	sp, [pc, #52]	; 8002988 <LoopFillZerobss+0x12>
+
+/* Copy the data segment initializers from flash to SRAM */  
+  ldr r0, =_sdata
  8002954:	480d      	ldr	r0, [pc, #52]	; (800298c <LoopFillZerobss+0x16>)
+  ldr r1, =_edata
  8002956:	490e      	ldr	r1, [pc, #56]	; (8002990 <LoopFillZerobss+0x1a>)
+  ldr r2, =_sidata
  8002958:	4a0e      	ldr	r2, [pc, #56]	; (8002994 <LoopFillZerobss+0x1e>)
+  movs r3, #0
  800295a:	2300      	movs	r3, #0
+  b LoopCopyDataInit
  800295c:	e002      	b.n	8002964 <LoopCopyDataInit>
 
 0800295e <CopyDataInit>:
+
+CopyDataInit:
+  ldr r4, [r2, r3]
  800295e:	58d4      	ldr	r4, [r2, r3]
+  str r4, [r0, r3]
  8002960:	50c4      	str	r4, [r0, r3]
+  adds r3, r3, #4
  8002962:	3304      	adds	r3, #4
 
 08002964 <LoopCopyDataInit>:
+
+LoopCopyDataInit:
+  adds r4, r0, r3
  8002964:	18c4      	adds	r4, r0, r3
+  cmp r4, r1
  8002966:	428c      	cmp	r4, r1
+  bcc CopyDataInit
  8002968:	d3f9      	bcc.n	800295e <CopyDataInit>
+  
+/* Zero fill the bss segment. */
+  ldr r2, =_sbss
  800296a:	4a0b      	ldr	r2, [pc, #44]	; (8002998 <LoopFillZerobss+0x22>)
+  ldr r4, =_ebss
  800296c:	4c0b      	ldr	r4, [pc, #44]	; (800299c <LoopFillZerobss+0x26>)
+  movs r3, #0
  800296e:	2300      	movs	r3, #0
+  b LoopFillZerobss
  8002970:	e001      	b.n	8002976 <LoopFillZerobss>
 
 08002972 <FillZerobss>:
+
+FillZerobss:
+  str  r3, [r2]
  8002972:	6013      	str	r3, [r2, #0]
+  adds r2, r2, #4
  8002974:	3204      	adds	r2, #4
 
 08002976 <LoopFillZerobss>:
+
+LoopFillZerobss:
+  cmp r2, r4
  8002976:	42a2      	cmp	r2, r4
+  bcc FillZerobss
  8002978:	d3fb      	bcc.n	8002972 <FillZerobss>
+
+/* Call the clock system intitialization function.*/
+  bl  SystemInit   
  800297a:	f7ff ffd7 	bl	800292c <SystemInit>
+/* Call static constructors */
+    bl __libc_init_array
  800297e:	f002 fb6f 	bl	8005060 <__libc_init_array>
+/* Call the application's entry point.*/
+  bl  main
  8002982:	f7ff f8a7 	bl	8001ad4 <main>
+  bx  lr    
  8002986:	4770      	bx	lr
+  ldr   sp, =_estack    		 /* set stack pointer */
  8002988:	20018000 	.word	0x20018000
+  ldr r0, =_sdata
  800298c:	20000000 	.word	0x20000000
+  ldr r1, =_edata
  8002990:	200001f8 	.word	0x200001f8
+  ldr r2, =_sidata
  8002994:	08009998 	.word	0x08009998
+  ldr r2, =_sbss
  8002998:	200001f8 	.word	0x200001f8
+  ldr r4, =_ebss
  800299c:	200044f4 	.word	0x200044f4
 
 080029a0 <ADC_IRQHandler>:
+ * @retval None       
+*/
+    .section  .text.Default_Handler,"ax",%progbits
+Default_Handler:
+Infinite_Loop:
+  b  Infinite_Loop
  80029a0:	e7fe      	b.n	80029a0 <ADC_IRQHandler>
 	...
 

@@ -23,9 +23,9 @@
 
 
 void foc_ClarkePark(MotorDriver *driver);
-void foc_setPhaseVoltage(MotorDriver *driver, float V_qref, float V_dref, float angle_el);
+void foc_setPhaseVoltage3(MotorDriver *driver, float V_qref, float V_dref, float angle_el);
 void foc_setPhaseVoltage2(MotorDriver *driver);
-void foc_setPhaseVoltage3(MotorDriver *driver, float V_alpha, float V_beta);
+void foc_setPhaseVoltage(MotorDriver *driver, float V_alpha, float V_beta);
 void foc_setPhaseVoltage_PI(MotorDriver *driver);
 void foc_alignSensorToElectric(MotorDriver *driver);
 void foc_getElectricalAngle(MotorDriver *driver);
