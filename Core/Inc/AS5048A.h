@@ -17,11 +17,6 @@
 #define CMD_READ 0x4000 //PARITY = 0, RW = R
 #define REG_ANGLE 0x3FFF
 
-#define PINBUS_ENC GPIOB
-#define PIN_ENC_X GPIO_PIN_4
-#define PIN_ENC_Y GPIO_PIN_5
-#define PIN_ENC_Z GPIO_PIN_6
-
 #define _1_16384 1/16384.0f
 
 extern SPI_HandleTypeDef hspi1;

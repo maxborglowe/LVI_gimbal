@@ -1,1 +1,2 @@
 time_utils.c:10:10:get_us	8	static
+time_utils.c:14:10:get_ms	0	static

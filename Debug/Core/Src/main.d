@@ -32,10 +32,10 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim_ex.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h \
  ../Core/Inc/BMI270.h ../Core/Inc/def.h ../Core/Inc/Quaternions.h \
- ../Core/Inc/AS5048A.h ../Core/Inc/DRV8313.h ../Core/Inc/pid.h \
- ../Core/Inc/time_utils.h ../Core/Inc/LowPassFilter.h \
- ../Core/Inc/Quaternions.h ../Core/Inc/DRV8313.h ../Core/Inc/def.h \
- ../Core/Inc/foc.h ../Core/Inc/LowPassFilter.h ../Core/Inc/AS5048A.h \
+ ../Core/Inc/time_utils.h ../Core/Inc/AS5048A.h ../Core/Inc/DRV8313.h \
+ ../Core/Inc/pid.h ../Core/Inc/LowPassFilter.h ../Core/Inc/Quaternions.h \
+ ../Core/Inc/DRV8313.h ../Core/Inc/def.h ../Core/Inc/foc.h \
+ ../Core/Inc/LowPassFilter.h ../Core/Inc/AS5048A.h \
  ../Core/Inc/time_utils.h
 
 ../Core/Inc/main.h:
@@ -110,13 +110,13 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
 
 ../Core/Inc/Quaternions.h:
 
+../Core/Inc/time_utils.h:
+
 ../Core/Inc/AS5048A.h:
 
 ../Core/Inc/DRV8313.h:
 
 ../Core/Inc/pid.h:
-
-../Core/Inc/time_utils.h:
 
 ../Core/Inc/LowPassFilter.h:
 

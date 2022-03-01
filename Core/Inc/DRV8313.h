@@ -16,9 +16,6 @@
 
 extern ADC_HandleTypeDef hadc1;
 
-#define PINBUS_DRV8313 GPIOB
-#define PIN_nSLEEP GPIO_PIN_13
-#define PIN_nFAULT GPIO_PIN_14
 
 /* SVPWM definitions */
 #define PWM_PERIOD 1024
@@ -27,6 +24,7 @@ extern ADC_HandleTypeDef hadc1;
 
 typedef struct MotorDriver{
 	uint16_t PIN_ENC; /* Chip select pin for encoder */
+	uint16_t PIN_nFAULT;
 
 	float i_a, i_b, i_d, i_q; /* Current parameters */
 	float V_q, V_d, V_alpha, V_beta; /* Voltage parameters*/

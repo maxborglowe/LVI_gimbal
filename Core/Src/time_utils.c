@@ -11,3 +11,7 @@ uint32_t get_us(){
 	return HAL_GetTick()*1000;
 }
 
+uint32_t get_ms(){
+	return HAL_GetTick();
+}
+

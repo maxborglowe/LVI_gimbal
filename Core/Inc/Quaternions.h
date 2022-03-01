@@ -9,14 +9,13 @@
 #define INC_QUATERNIONS_H_
 
 #include <stdio.h>
+#include "time_utils.h"
 
 extern float SEq_1, SEq_2, SEq_3, SEq_4;
 extern volatile float q0, q1, q2, q3;
-extern float sampleDelay;
-extern float while_t;
-extern volatile uint32_t us_t_prev, us_t;
 
 float sampleFreq;	//the rate at which the IMU is being sampled in while loop
+extern float sampleFreq_inv;
 //+ extra time for other stuff
 #define beta 0.1f								//proportional gain
 
@@ -30,10 +29,9 @@ typedef struct Quaternion {
 	float q0, q1, q2, q3;
 } Quaternion;
 
-void setSampleFreq_ms(void);
-void setSampleFreq_us(void);
-void filterUpdate(float w_x, float w_y, float w_z, float a_x, float a_y,
-		float a_z);
+float setSampleFreq_ms(void);
+float setSampleFreq_us(uint32_t us);
+void filterUpdate(float w_x, float w_y, float w_z, float a_x, float a_y, float a_z, float time);
 struct EulerAngles ToEulerAngles(float q1, float q2, float q3, float q4);
 float invSqrt(float x);
 

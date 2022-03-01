@@ -10,6 +10,7 @@
 
 #include "stm32f4xx_hal.h"
 
+uint32_t get_ms();
 uint32_t get_us();
 
 __STATIC_INLINE void DWT_Init(void)

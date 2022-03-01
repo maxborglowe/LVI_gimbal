@@ -716,11 +716,25 @@ void bmi270_spi_init() {
 
 		bmi270_spi_write_8(REG_PWR_CONF, 0x00); //Disable PWR_CONF.adv_power_save
 		HAL_Delay(1);								//wait for 450us
+
 		bmi270_spi_write_8(REG_INIT_CTRL, 0x00); //prepare config load INIT_CTRL = 0x00
-		bmi270_spi_write_burst(REG_INIT_DATA, bmi270_config_file,
-				bmi270_config_size); //burst write to reg INIT_DATA. Start with byte 0.
+		bmi270_spi_write_burst(REG_INIT_DATA, bmi270_config_file, bmi270_config_size); //burst write to reg INIT_DATA. Start with byte 0.
 		bmi270_spi_write_8(REG_INIT_CTRL, 0x01);//complete config load INIT_CTRL = 0x01
 	}
+}
+
+/*
+ * @brief Check the correct initialization status as described on p.21 in datasheet.
+ */
+void bmi270_spi_init_check() {
+	sprintf((char*) buff, "BMI270: initialization sequence complete\r\n");
+	HAL_UART_Transmit(&huart2, buff, strlen(buff), 200);
+	HAL_Delay(150); //wait >140 ms
+	uint16_t init_status = bmi270_spi_read_8(REG_INTERNAL_STATUS);
+	init_status &= 0x0F;
+	init_status |= 0xC000;
+
+	bmi270_print(init_status);
 }
 
 /*
@@ -770,19 +784,6 @@ uint16_t bmi270_read_accel(uint8_t axis){
 	return data;
 }
 
-/*
- * @brief Check the correct initialization status as described on p.21 in datasheet.
- */
-void bmi270_spi_init_check() {
-	sprintf((char*) buff, "BMI270: initialization sequence complete\r\n");
-	HAL_UART_Transmit(&huart2, buff, strlen(buff), 200);
-	HAL_Delay(150); //wait >140 ms
-	uint16_t init_status = bmi270_spi_read_8(REG_INTERNAL_STATUS);
-	init_status = init_status & 0x0F;
-	init_status = init_status | 0xC000;
-
-	bmi270_print(init_status);
-}
 
 /*
  * @brief Writes 8 bits of data to SDI -pin on BMI270.

@@ -20,7 +20,7 @@
 uint8_t drv8313_init(MotorDriver *driver, TIM_HandleTypeDef *htim) {
 	HAL_GPIO_WritePin(PINBUS_DRV8313, PIN_nSLEEP, GPIO_PIN_SET); /* Enable the unit by setting nRESET + nSLEEP to HIGH*/
 	HAL_Delay(1); //Misread prevention delay.
-	if (!HAL_GPIO_ReadPin(PINBUS_DRV8313, PIN_nFAULT)) {
+	if (!HAL_GPIO_ReadPin(PINBUS_DRV8313, driver->PIN_nFAULT)) {
 		return 0;
 	}
 
@@ -44,15 +44,15 @@ uint8_t drv8313_init(MotorDriver *driver, TIM_HandleTypeDef *htim) {
 	driver->speed_reg.lim_max = BLDC_MAX_VOLTAGE/BLDC_PHASE_RESISTANCE;
 //	driver->pos_reg.lim_min = -6000; 		/* ˚/s */
 //	driver->pos_reg.lim_max = 6000;		/* ˚/s */
-	driver->pos_reg.lim_min = -20; 		/* rad/s */
-	driver->pos_reg.lim_max = 20;		/* rad/s */
+	driver->pos_reg.lim_min = -52.35; 		/* rad/s */
+	driver->pos_reg.lim_max = 52.35;		/* rad/s */
 
 	/* d-regulator */
-	driver->d_reg.Kp = 2.0f;
+	driver->d_reg.Kp = 1.0f;
 	driver->d_reg.Ki = 0.0f;
 	driver->d_reg.Kd = 0.0f;
 	/* q-regulator */
-	driver->q_reg.Kp = 2.0f;
+	driver->q_reg.Kp = 1.0f;
 	driver->q_reg.Ki = 0.0f;
 	driver->q_reg.Kd = 0.0f;
 
@@ -68,9 +68,9 @@ uint8_t drv8313_init(MotorDriver *driver, TIM_HandleTypeDef *htim) {
 	driver->pos_reg.Kd = 0.25f;
 
 	/* LPF config */
-	lpf_init(&driver->LPF_current_d, 0.01f);
-	lpf_init(&driver->LPF_current_q, 0.01f);
-	lpf_init(&driver->LPF_velocity, 0.005f);
+	lpf_init(&driver->LPF_current_d, 0.0025f);
+	lpf_init(&driver->LPF_current_q, 0.0025f);
+	lpf_init(&driver->LPF_velocity, 0.05f);
 	lpf_init(&driver->LPF_angle, 0.005f);
 
 	HAL_TIM_PWM_Start(driver->timer, driver->pwm_ch1);

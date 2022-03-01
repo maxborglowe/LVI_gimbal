@@ -103,8 +103,7 @@
 	#define temp_en 0x01<<3
 
 //customized BMI270 stuff
-#define PINBUS_BMI270 GPIOB
-#define PIN_BMI270_CS GPIO_PIN_0
+
 #define BMI270_SPI 1
 
 #define BMI270_PWR_MODE_LOW 0

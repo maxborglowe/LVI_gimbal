@@ -7,22 +7,14 @@
 
 #include <math.h>
 #include "Quaternions.h"
-#include "time_utils.h"
 
 /*
  * @brief Set the sample frequency based on the while loop cycle time (in milliseconds)
  */
-void setSampleFreq_ms() {
-	sampleFreq = 1 / (1e-3 * while_t);
-}
+float setSampleFreq_us(uint32_t us) {
 
-/*
- * @brief Set the sample frequency based on the while loop cycle time (in milliseconds)
- */
-void setSampleFreq_us() {
-
-	sampleFreq = 1 / get_us();
-//	sampleFreq = 1 / (1e-6 * us_t);
+	sampleFreq = 1.0f/(us*1e-6);
+	return sampleFreq;
 }
 
 /*
@@ -33,8 +25,9 @@ void setSampleFreq_us() {
  * @param Current acceleration on x-axis from accelerometer
  * @param Current acceleration on y-axis from accelerometer
  * @param Current acceleration on z-axis from accelerometer
+ * @param Time passed since last conversion
  */
-void filterUpdate(float gx, float gy, float gz, float ax, float ay, float az) {
+void filterUpdate(float gx, float gy, float gz, float ax, float ay, float az, float time) {
 
 	float recipNorm;
 	float s0, s1, s2, s3;
@@ -93,10 +86,10 @@ void filterUpdate(float gx, float gy, float gz, float ax, float ay, float az) {
 	}
 
 	// Integrate rate of change of quaternion to yield quaternion
-	q0 += qDot1 * (1.0f / sampleFreq);
-	q1 += qDot2 * (1.0f / sampleFreq);
-	q2 += qDot3 * (1.0f / sampleFreq);
-	q3 += qDot4 * (1.0f / sampleFreq);
+	q0 += qDot1 * (1.0f * time);
+	q1 += qDot2 * (1.0f * time);
+	q2 += qDot3 * (1.0f * time);
+	q3 += qDot4 * (1.0f * time);
 
 	// Normalise quaternion
 	recipNorm = invSqrt(q0 * q0 + q1 * q1 + q2 * q2 + q3 * q3);
