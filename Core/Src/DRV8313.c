@@ -48,28 +48,27 @@ uint8_t drv8313_init(MotorDriver *driver, TIM_HandleTypeDef *htim) {
 	driver->pos_reg.lim_max = 52.35;		/* rad/s */
 
 	/* d-regulator */
-	driver->d_reg.Kp = 1.0f;
+	driver->d_reg.Kp = 1.5f;
 	driver->d_reg.Ki = 0.0f;
 	driver->d_reg.Kd = 0.0f;
 	/* q-regulator */
-	driver->q_reg.Kp = 1.0f;
+	driver->q_reg.Kp = 1.5f;
 	driver->q_reg.Ki = 0.0f;
 	driver->q_reg.Kd = 0.0f;
 
 	/* speed regulator */
-	driver->speed_reg.Kp = 0.25f;
+	driver->speed_reg.Kp = 0.5f;
 	driver->speed_reg.Ki = 10.0f;
 	driver->speed_reg.Kd = 0.0f;
-	/**/
 
 	/* position regulator */
 	driver->pos_reg.Kp = 20.0f;
 	driver->pos_reg.Ki = 0.0f;
-	driver->pos_reg.Kd = 0.25f;
+	driver->pos_reg.Kd = 0.5f;
 
 	/* LPF config */
-	lpf_init(&driver->LPF_current_d, 0.0025f);
-	lpf_init(&driver->LPF_current_q, 0.0025f);
+	lpf_init(&driver->LPF_current_d, 0.005f);
+	lpf_init(&driver->LPF_current_q, 0.005f);
 	lpf_init(&driver->LPF_velocity, 0.05f);
 	lpf_init(&driver->LPF_angle, 0.005f);
 

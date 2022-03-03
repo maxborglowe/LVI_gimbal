@@ -22,7 +22,7 @@
 #define USE_BMI270 1
 #define USE_AS5048A 1
 #define USE_DRV8313 1
-#define USE_PRINT 1
+#define USE_PRINT 0
 #define USE_IMU_VIS 0
 
 #define BMI270_CONFIG_DONE 0

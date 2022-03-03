@@ -238,7 +238,9 @@ int main(void) {
 		as5048a_init(&MotorY);
 		as5048a_init(&MotorZ);
 
+		MotorX.LPF_angle_measure.Tf = 0.001f;
 		MotorY.LPF_angle_measure.Tf = 0.001f;
+		MotorZ.LPF_angle_measure.Tf = 0.001f;
 	}
 
 	if (USE_DRV8313) {
@@ -251,8 +253,6 @@ int main(void) {
 		MotorX.pole_pairs = 11;
 		MotorY.pole_pairs = 11;
 		MotorZ.pole_pairs = 11;
-
-//		foc_init(&MotorX);
 
 		/*Initialize ADC */
 		HAL_ADC_Start_DMA(&hadc1, (uint32_t*) adc_read, 7);
@@ -313,20 +313,18 @@ int main(void) {
 					* sense_ratio;
 			MotorX.i_b = (adc_read[1] * adc_ratio * adc_ref - ina_ref)
 					* sense_ratio;
-			foc_update(&MotorX, 0/*Imu.roll * DEG_TO_RAD*/);
-
+//			foc_update(&MotorX, Imu.roll * DEG_TO_RAD);
 			MotorY.i_a = (adc_read[2] * adc_ratio * adc_ref - ina_ref)
 					* sense_ratio;
 			MotorY.i_b = (adc_read[3] * adc_ratio * adc_ref - ina_ref)
 					* sense_ratio;
-//			foc_update(&MotorY);
+//			foc_update(&MotorY, Imu.roll * DEG_TO_RAD);
 
 			MotorZ.i_a = (adc_read[4] * adc_ratio * adc_ref - ina_ref)
 					* sense_ratio;
 			MotorZ.i_b = (adc_read[5] * adc_ratio * adc_ref - ina_ref)
 					* sense_ratio;
-//			foc_update(&MotorZ);
-
+			foc_update(&MotorZ, Imu.roll * DEG_TO_RAD);
 		}
 
 		if (USE_BMI270) {
@@ -392,22 +390,22 @@ int main(void) {
 									MotorZ.angle * RAD_TO_DEG,
 									MotorZ.zero_pos_map, MotorZ.velocity);
 				}
-				if (USE_DRV8313) {
-					len += sprintf((char*) buff + len,
-							"\r\n########## DRV8313 DATA ##########\r\n"
-							"######################################\r\n"
-							"MotorX\r\n"
-							"i_a: %.3f\ti_b: %.3f\r\n"
-							"MotorY\r\n"
-							"i_a: %f\ti_b: %f\r\n"
-							"MotorZ\r\n"
-							"i_a: %f\ti_b: %f\r\n"
-							"INA181 ref. voltage: %.3f\r\n",
-							MotorX.i_a, MotorX.i_b,
-							MotorY.i_a, MotorY.i_b,
-							MotorZ.i_a, MotorZ.i_b,
-							ina_ref);
-				}
+//				if (USE_DRV8313) {
+//					len += sprintf((char*) buff + len,
+//							"\r\n########## DRV8313 DATA ##########\r\n"
+//							"######################################\r\n"
+//							"MotorX\r\n"
+//							"i_a: %.3f\ti_b: %.3f\r\n"
+//							"MotorY\r\n"
+//							"i_a: %f\ti_b: %f\r\n"
+//							"MotorZ\r\n"
+//							"i_a: %f\ti_b: %f\r\n"
+//							"INA181 ref. voltage: %.3f\r\n",
+//							MotorX.i_a, MotorX.i_b,
+//							MotorY.i_a, MotorY.i_b,
+//							MotorZ.i_a, MotorZ.i_b,
+//							ina_ref);
+//				}
 				if (USE_BMI270) {
 					len +=
 							sprintf((char*) buff + len,
@@ -450,14 +448,14 @@ int main(void) {
 		loop_cnt %= print_flag;
 
 		/* millisecond timer */
+		/* Note: It seems that HAL_GetTick() works for quaternions, while __HAL_TIM_GET_COUNTER() does not.
+		 * The latter results in jittery movement. */
 		t2 = HAL_GetTick() - t1;
-		t2 = (t2 == 0) ? 1.0f : t2;
 		loop_time = t2;
 
 		/* microsecond timer */
-
 		us_t_prev = __HAL_TIM_GET_COUNTER(&htim5) - us_t;
-//		sampleFreq = setSampleFreq_us(us_t_prev);
+
 		/* USER CODE END WHILE */
 
 		/* USER CODE BEGIN 3 */
@@ -721,6 +719,7 @@ static void MX_TIM2_Init(void) {
 
 	/* USER CODE END TIM2_Init 0 */
 
+	TIM_ClockConfigTypeDef sClockSourceConfig = { 0 };
 	TIM_MasterConfigTypeDef sMasterConfig = { 0 };
 	TIM_OC_InitTypeDef sConfigOC = { 0 };
 
@@ -730,9 +729,16 @@ static void MX_TIM2_Init(void) {
 	htim2.Instance = TIM2;
 	htim2.Init.Prescaler = 1;
 	htim2.Init.CounterMode = TIM_COUNTERMODE_CENTERALIGNED1;
-	htim2.Init.Period = 512 - 1;
+	htim2.Init.Period = 1200 - 1;
 	htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
 	htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+	if (HAL_TIM_Base_Init(&htim2) != HAL_OK) {
+		Error_Handler();
+	}
+	sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+	if (HAL_TIM_ConfigClockSource(&htim2, &sClockSourceConfig) != HAL_OK) {
+		Error_Handler();
+	}
 	if (HAL_TIM_PWM_Init(&htim2) != HAL_OK) {
 		Error_Handler();
 	}
@@ -745,7 +751,7 @@ static void MX_TIM2_Init(void) {
 	sConfigOC.OCMode = TIM_OCMODE_PWM1;
 	sConfigOC.Pulse = 0;
 	sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
-	sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
+	sConfigOC.OCFastMode = TIM_OCFAST_ENABLE;
 	if (HAL_TIM_PWM_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_1)
 			!= HAL_OK) {
 		Error_Handler();
@@ -776,6 +782,7 @@ static void MX_TIM3_Init(void) {
 
 	/* USER CODE END TIM3_Init 0 */
 
+	TIM_ClockConfigTypeDef sClockSourceConfig = { 0 };
 	TIM_MasterConfigTypeDef sMasterConfig = { 0 };
 	TIM_OC_InitTypeDef sConfigOC = { 0 };
 
@@ -785,9 +792,16 @@ static void MX_TIM3_Init(void) {
 	htim3.Instance = TIM3;
 	htim3.Init.Prescaler = 1;
 	htim3.Init.CounterMode = TIM_COUNTERMODE_CENTERALIGNED1;
-	htim3.Init.Period = 65535;
+	htim3.Init.Period = 1200 - 1;
 	htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
 	htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+	if (HAL_TIM_Base_Init(&htim3) != HAL_OK) {
+		Error_Handler();
+	}
+	sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+	if (HAL_TIM_ConfigClockSource(&htim3, &sClockSourceConfig) != HAL_OK) {
+		Error_Handler();
+	}
 	if (HAL_TIM_PWM_Init(&htim3) != HAL_OK) {
 		Error_Handler();
 	}
@@ -800,7 +814,7 @@ static void MX_TIM3_Init(void) {
 	sConfigOC.OCMode = TIM_OCMODE_PWM1;
 	sConfigOC.Pulse = 0;
 	sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
-	sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
+	sConfigOC.OCFastMode = TIM_OCFAST_ENABLE;
 	if (HAL_TIM_PWM_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_1)
 			!= HAL_OK) {
 		Error_Handler();
