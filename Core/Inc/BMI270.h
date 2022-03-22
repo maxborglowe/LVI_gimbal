@@ -136,6 +136,7 @@ typedef struct IMU{
 	float gyr_x, gyr_y, gyr_z;
 	float acc_x, acc_y, acc_z;
 	float roll, pitch, yaw;
+	float roll_zero, pitch_zero, yaw_zero;
 
 	float gyr_lim_min_x, gyr_lim_min_y, gyr_lim_min_z;
 	float gyr_lim_max_x, gyr_lim_max_y, gyr_lim_max_z;
@@ -145,6 +146,7 @@ typedef struct IMU{
 	uint8_t gyr_odr, gyr_bwp, gyr_noise_perf, gyr_filter_perf;
 	/* ACC_CONF */
 	uint8_t acc_odr, acc_bwp, acc_filter_perf;
+
 }IMU;
 
 extern char* buff[BUFF_SIZE];

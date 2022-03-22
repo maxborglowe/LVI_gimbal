@@ -15,12 +15,17 @@
 #include "time_utils.h"
 
 #define CMD_READ 0x4000 //PARITY = 0, RW = R
+#define CMD_WRITE 0x0000 //PARITY = 0, RW = W
 #define REG_ANGLE 0x3FFF
+#define REG_OTP_REGISTER_ZERO_POSITION_HI 0x0016
+#define REG_OTP_REGISTER_ZERO_POSITION_LOW_6_LSBS 0x0017
 
-#define _1_16384 1/16384.0f
+#define _1_16384 1/16384.0f /* Used to convert bits to angle */
 
 extern SPI_HandleTypeDef hspi1;
 extern UART_HandleTypeDef huart2;
+
+uint16_t as5048a_read(uint16_t ss, uint16_t reg);
 
 void as5048a_setZeroArg(MotorDriver *driver, float arg_pos);
 void as5048a_setZero(MotorDriver *driver);

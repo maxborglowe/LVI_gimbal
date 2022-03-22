@@ -89,6 +89,7 @@ volatile clock_t t1, t2;
 float loop_time;
 
 uint16_t offset_x = 0, offset_y = 0, offset_z = 0;
+float x_target;
 
 uint8_t chip_id = 0;
 //######################################
@@ -228,6 +229,9 @@ int main(void) {
 		Imu.acc_filter_perf = acc_ulp;
 		bmi270_setAccConf(&Imu);
 		bmi270_getAccConf(&Imu);
+
+		Imu.roll_zero = Imu.roll;
+		Imu.pitch_zero = Imu.pitch;
 	}
 
 	/* Initialize encoders for each motor
@@ -236,11 +240,11 @@ int main(void) {
 	if (USE_AS5048A) {
 		as5048a_init(&MotorX);
 		as5048a_init(&MotorY);
-		as5048a_init(&MotorZ);
+//		as5048a_init(&MotorZ);
 
 		MotorX.LPF_angle_measure.Tf = 0.001f;
 		MotorY.LPF_angle_measure.Tf = 0.001f;
-		MotorZ.LPF_angle_measure.Tf = 0.001f;
+//		MotorZ.LPF_angle_measure.Tf = 0.001f;
 	}
 
 	if (USE_DRV8313) {
@@ -248,7 +252,7 @@ int main(void) {
 		/* Initialize motor structs and start PWM*/
 		drv8313_init(&MotorX, &htim1);
 		drv8313_init(&MotorY, &htim2);
-		drv8313_init(&MotorZ, &htim3);
+//		drv8313_init(&MotorZ, &htim3);
 
 		MotorX.pole_pairs = 11;
 		MotorY.pole_pairs = 11;
@@ -278,11 +282,11 @@ int main(void) {
 				* sense_ratio;
 		MotorY.i_b = (adc_read[3] * adc_ratio * adc_ref - ina_ref)
 				* sense_ratio;
-
-		MotorZ.i_a = (adc_read[4] * adc_ratio * adc_ref - ina_ref)
-				* sense_ratio;
-		MotorZ.i_b = (adc_read[5] * adc_ratio * adc_ref - ina_ref)
-				* sense_ratio;
+//
+//		MotorZ.i_a = (adc_read[4] * adc_ratio * adc_ref - ina_ref)
+//				* sense_ratio;
+//		MotorZ.i_b = (adc_read[5] * adc_ratio * adc_ref - ina_ref)
+//				* sense_ratio;
 
 	}
 
@@ -308,23 +312,27 @@ int main(void) {
 			/* get reference voltage on INA2181 */
 			ina_ref = adc_read[6] * adc_ratio * adc_ref;
 
-			/* get phase currents on each motor */
+			/* get phase currents on the motor */
 			MotorX.i_a = (adc_read[0] * adc_ratio * adc_ref - ina_ref)
 					* sense_ratio;
 			MotorX.i_b = (adc_read[1] * adc_ratio * adc_ref - ina_ref)
 					* sense_ratio;
-//			foc_update(&MotorX, Imu.roll * DEG_TO_RAD);
+			/* set SVPWM on the motor*/
+			foc_update(&MotorX, PID_Update(&MotorX.imu_reg, 0, Imu.roll*DEG_TO_RAD));
+
 			MotorY.i_a = (adc_read[2] * adc_ratio * adc_ref - ina_ref)
 					* sense_ratio;
 			MotorY.i_b = (adc_read[3] * adc_ratio * adc_ref - ina_ref)
 					* sense_ratio;
-//			foc_update(&MotorY, Imu.roll * DEG_TO_RAD);
+			foc_update(&MotorY, PID_Update(&MotorY.imu_reg, 0, Imu.pitch*DEG_TO_RAD));
+		}
 
-			MotorZ.i_a = (adc_read[4] * adc_ratio * adc_ref - ina_ref)
-					* sense_ratio;
-			MotorZ.i_b = (adc_read[5] * adc_ratio * adc_ref - ina_ref)
-					* sense_ratio;
-			foc_update(&MotorZ, Imu.roll * DEG_TO_RAD);
+		/* Set current encoder positions to be zero-pos when pressing blue btn on Nucleo */
+		if(USE_AS5048A && !HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_13)){
+			as5048a_setZeroArg(&MotorX, Imu.roll);
+			as5048a_setZeroArg(&MotorY, Imu.pitch);
+			Imu.roll_zero = Imu.roll;
+			Imu.pitch_zero = Imu.pitch;
 		}
 
 		if (USE_BMI270) {
@@ -338,7 +346,7 @@ int main(void) {
 
 			bmi270_calibrateNoise(&Imu);
 
-			//gyro limiter. Prevents yaw drift programmatically, with some success.
+			/*gyro limiter. Prevents yaw drift programmatically, with some success.*/
 //			if (Imu.calibration_c >= BMI270_CALIBRATION_TIM) {
 //				if (Imu.gyr_x > -Imu.gyr_lim_min_x
 //						&& Imu.gyr_x < Imu.gyr_lim_max_x) {
@@ -380,15 +388,11 @@ int main(void) {
 											"MotorX\r\n"
 											"Angle: %.3f\t Zero pos: %.3f\t speed: %.3frad/s\r\n"
 											"MotorY\r\n"
-											"Angle: %.3f\t Zero pos: %.3f\t speed: %.3frad/s\r\n"
-											"MotorZ\r\n"
 											"Angle: %.3f\t Zero pos: %.3f\t speed: %.3frad/s\r\n",
 									MotorX.angle * RAD_TO_DEG,
-									MotorX.zero_pos_map, MotorX.velocity,
+									MotorX.zero_pos_map * RAD_TO_DEG, MotorX.velocity,
 									MotorY.angle * RAD_TO_DEG,
-									MotorY.zero_pos_map, MotorY.velocity,
-									MotorZ.angle * RAD_TO_DEG,
-									MotorZ.zero_pos_map, MotorZ.velocity);
+									MotorY.zero_pos_map * RAD_TO_DEG, MotorY.velocity);
 				}
 //				if (USE_DRV8313) {
 //					len += sprintf((char*) buff + len,
@@ -419,7 +423,9 @@ int main(void) {
 											"gyroscope x: %f˚/s, y: %f˚/s, z: %f˚/s\r\n"
 											"accelerometer x: %f m/s2, y: %f m/s2, z: %f m/s2\r\n"
 											"q0: %f, q1: %f, q2: %f, q3: %f\r\n"
-											"roll: %f, pitch: %f, yaw: %f\r\n",
+											"roll: %f, pitch: %f, yaw: %f\r\n"
+											"roll_zero: %f, pitch_zero: %f, yaw_zero: %f\r\n"
+											"target x: %f\r\n",
 									Imu.acc_range, Imu.gyr_range,
 									(uint32_t) us_t_prev, loop_time,
 									Imu.gyr_lim_min_x, Imu.gyr_lim_min_y,
@@ -427,7 +433,9 @@ int main(void) {
 									Imu.gyr_lim_max_y, Imu.gyr_lim_max_z,
 									Imu.gyr_x, Imu.gyr_y, Imu.gyr_z, Imu.acc_x,
 									Imu.acc_y, Imu.acc_z, q0, q1, q2, q3,
-									Imu.roll, Imu.pitch, Imu.yaw);
+									Imu.roll, Imu.pitch, Imu.yaw,
+									Imu.roll_zero, Imu.pitch_zero, Imu.yaw_zero,
+									x_target);
 				}
 				HAL_UART_Transmit(&huart2, (uint8_t*) buff,
 						strlen((char*) buff),

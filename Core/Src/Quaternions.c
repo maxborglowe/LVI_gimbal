@@ -110,7 +110,7 @@ struct EulerAngles ToEulerAngles(float _q0, float _q1, float _q2, float _q3) {
 	struct EulerAngles angles;
 
 	// roll (x-axis rotation)
-	angles.x = atan2(2 * (_q0 * _q1 + _q2 * _q3),
+	angles.x = -atan2(2 * (_q0 * _q1 + _q2 * _q3),
 			_q0 * _q0 - _q1 * _q1 - _q2 * _q2 + _q3 * _q3);
 
 	// pitch (y-axis rotation)

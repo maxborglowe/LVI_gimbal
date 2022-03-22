@@ -141,10 +141,15 @@ void foc_update(MotorDriver *driver, float target) {
  */
 void foc_pi_control(MotorDriver *driver, float target) {
 
+
+
 	/* Check which type of regulation should be used */
-	if (CONTROL_TYPE == CONTROL_POSITION) driver->velocity_target = PID_Update(
-			&driver->pos_reg, target, driver->angle);
-	else if (CONTROL_TYPE == CONTROL_VELOCITY) driver->velocity_target = target;
+	if (CONTROL_TYPE == CONTROL_POSITION){
+		driver->velocity_target = PID_Update(&driver->pos_reg, target, driver->angle);
+	}
+	else if (CONTROL_TYPE == CONTROL_VELOCITY){
+		driver->velocity_target = target;
+	}
 
 	/* Velocity regulation --> i_qref
 	 * Note: Setpoint should be set by main function later*/

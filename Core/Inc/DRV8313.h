@@ -29,7 +29,7 @@ typedef struct MotorDriver{
 	float i_a, i_b, i_d, i_q; /* Current parameters */
 	float V_q, V_d, V_alpha, V_beta; /* Voltage parameters*/
 
-	PID d_reg, q_reg, speed_reg, pos_reg; /* PID regulators */
+	PID d_reg, q_reg, speed_reg, pos_reg, imu_reg; /* PID regulators */
 	LPF LPF_current_d, LPF_current_q, LPF_velocity, LPF_angle, /* */ LPF_angle_measure;
 
 	TIM_HandleTypeDef *timer; /* PWM timer handle */

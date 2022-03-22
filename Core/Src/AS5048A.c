@@ -50,9 +50,8 @@ uint16_t as5048a_getRawRotation(uint16_t ss) {
 void as5048a_init(MotorDriver *driver) {
 	HAL_GPIO_WritePin(PINBUS_ENC, driver->PIN_ENC, GPIO_PIN_SET);
 
-	as5048a_setZero(driver);
-
 	as5048a_getAngle(driver);
+	as5048a_setZeroArg(driver, driver->angle);
 
 	lpf_init(&driver->LPF_angle_measure, 0.005f);
 }
@@ -73,14 +72,6 @@ float as5048a_normalize(float angle) {
 
 
 
-/*
- * @brief Set the zero position to arbitrary value.
- * Use: When moving the camera by hand, you could make the zero position the same as the current angle
- * @param input angle
- */
-void as5048a_setZeroArg(MotorDriver *driver, float arg_pos) {
-	driver->zero_pos = fmod(arg_pos, _2PI);
-}
 
 /*
  * @brief Convert raw data from getRawRotation to angles in radians.
@@ -109,6 +100,15 @@ uint8_t calcEvenParity(uint16_t value) {
 void as5048a_getAngle(MotorDriver *driver) {
 	float angle = as5048a_readToAngle(as5048a_getRawRotation(driver->PIN_ENC)); //- driver->zero_pos_map;
 	driver->angle = lpf_exec(&driver->LPF_angle_measure, as5048a_normalize(angle));
+}
+
+/*
+ * @brief Set the zero position to arbitrary value.
+ * Use: When moving the camera by hand, you could make the zero position the same as the current angle
+ * @param input angle
+ */
+void as5048a_setZeroArg(MotorDriver *driver, float arg_pos) {
+	driver->zero_pos_map = fmod(arg_pos, _2PI);
 }
 
 /**

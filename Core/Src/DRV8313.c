@@ -20,6 +20,8 @@
 uint8_t drv8313_init(MotorDriver *driver, TIM_HandleTypeDef *htim) {
 	HAL_GPIO_WritePin(PINBUS_DRV8313, PIN_nSLEEP, GPIO_PIN_SET); /* Enable the unit by setting nRESET + nSLEEP to HIGH*/
 	HAL_Delay(1); //Misread prevention delay.
+
+	/* Check for faults before init */
 	if (!HAL_GPIO_ReadPin(PINBUS_DRV8313, driver->PIN_nFAULT)) {
 		return 0;
 	}
@@ -35,6 +37,7 @@ uint8_t drv8313_init(MotorDriver *driver, TIM_HandleTypeDef *htim) {
 	PID_Init(&driver->q_reg);
 	PID_Init(&driver->speed_reg);
 	PID_Init(&driver->pos_reg);
+	PID_Init(&driver->imu_reg);
 
 	driver->d_reg.lim_min = -BLDC_MAX_VOLTAGE;
 	driver->d_reg.lim_max = BLDC_MAX_VOLTAGE;
@@ -44,27 +47,36 @@ uint8_t drv8313_init(MotorDriver *driver, TIM_HandleTypeDef *htim) {
 	driver->speed_reg.lim_max = BLDC_MAX_VOLTAGE/BLDC_PHASE_RESISTANCE;
 //	driver->pos_reg.lim_min = -6000; 		/* ˚/s */
 //	driver->pos_reg.lim_max = 6000;		/* ˚/s */
-	driver->pos_reg.lim_min = -52.35; 		/* rad/s */
-	driver->pos_reg.lim_max = 52.35;		/* rad/s */
+	driver->pos_reg.lim_min = -52.35f; 		/* rad/s */
+	driver->pos_reg.lim_max = 52.35f;		/* rad/s */
+	driver->imu_reg.lim_min = -100.0f;
+	driver->imu_reg.lim_max = 100.0f;
 
 	/* d-regulator */
-	driver->d_reg.Kp = 1.5f;
+	driver->d_reg.Kp = 1.0f;
 	driver->d_reg.Ki = 0.0f;
 	driver->d_reg.Kd = 0.0f;
 	/* q-regulator */
-	driver->q_reg.Kp = 1.5f;
+	driver->q_reg.Kp = 1.0f;
 	driver->q_reg.Ki = 0.0f;
 	driver->q_reg.Kd = 0.0f;
 
+	/*Testing note for d and q regs: Set Ki to 1.0 and try making zero-pos on encoders alterable */
+
 	/* speed regulator */
-	driver->speed_reg.Kp = 0.5f;
+	driver->speed_reg.Kp = 1.0f;
 	driver->speed_reg.Ki = 10.0f;
-	driver->speed_reg.Kd = 0.0f;
+	driver->speed_reg.Kd = 0.0f; /* NOPE. DON'T. EDIT. */
 
 	/* position regulator */
-	driver->pos_reg.Kp = 20.0f;
+	driver->pos_reg.Kp = 15.0f;
 	driver->pos_reg.Ki = 0.0f;
-	driver->pos_reg.Kd = 0.5f;
+	driver->pos_reg.Kd = 0.0f;
+
+	/* imu regulator */
+	driver->imu_reg.Kp = 1.0f;
+	driver->imu_reg.Ki = 5.0f;
+	driver->imu_reg.Kd = 0.0f;
 
 	/* LPF config */
 	lpf_init(&driver->LPF_current_d, 0.005f);
