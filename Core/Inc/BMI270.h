@@ -12,6 +12,7 @@
 #include <string.h>
 #include <stdio.h>
 #include "def.h"
+#include "LowPassFilter.h"
 
 //Default address. If this address is used, SDO must be pulled to GND.
 #define BMI270_ADDR 0b1101000
@@ -136,10 +137,12 @@ typedef struct IMU{
 	float gyr_x, gyr_y, gyr_z;
 	float acc_x, acc_y, acc_z;
 	float roll, pitch, yaw;
-	float roll_zero, pitch_zero, yaw_zero;
+	float roll_sp, pitch_sp, yaw_sp;
 
 	float gyr_lim_min_x, gyr_lim_min_y, gyr_lim_min_z;
 	float gyr_lim_max_x, gyr_lim_max_y, gyr_lim_max_z;
+
+	LPF imu_filter;
 
 	uint16_t calibration_c;
 	/* GYR_CONF */

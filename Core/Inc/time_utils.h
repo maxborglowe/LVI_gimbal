@@ -15,8 +15,8 @@ uint32_t get_us();
 
 __STATIC_INLINE void DWT_Init(void)
 {
-	CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk; // разрешаем использовать счётчик
-	DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;   // запускаем счётчик
+	CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
+	DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
 }
 
 __STATIC_INLINE void delay_us(uint32_t us)

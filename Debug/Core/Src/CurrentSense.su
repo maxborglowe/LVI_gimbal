@@ -1,0 +1,2 @@
+CurrentSense.c:15:6:CurrentSense_Init	12	static
+CurrentSense.c:26:6:CurrentSense_GetPhaseCurrents	0	static

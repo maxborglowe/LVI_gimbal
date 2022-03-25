@@ -18,23 +18,27 @@ extern ADC_HandleTypeDef hadc1;
 
 
 /* SVPWM definitions */
-#define PWM_PERIOD 1024
-#define DIV1_3 0.333333
-#define DIV2_3 0.666667
+//#define DIV1_3 0.333333
+//#define DIV2_3 0.666667
 
 typedef struct MotorDriver{
 	uint16_t PIN_ENC; /* Chip select pin for encoder */
-	uint16_t PIN_nFAULT;
+	uint16_t PIN_nFAULT; /* Fault detector pin for BLDC driver*/
+	uint16_t update_ctr; /* Counter variable to keep track of when FOC should update */
+	uint16_t update_goal; /* The value to be reached before executing FOC update */
 
 	float i_a, i_b, i_d, i_q; /* Current parameters */
+	uint8_t i_a_ch, i_b_ch; /* Current sensor ADC channels*/
 	float V_q, V_d, V_alpha, V_beta; /* Voltage parameters*/
+	float offset; /* electro-mechanical offset in BLDC */
+
 
 	PID d_reg, q_reg, speed_reg, pos_reg, imu_reg; /* PID regulators */
-	LPF LPF_current_d, LPF_current_q, LPF_velocity, LPF_angle, /* */ LPF_angle_measure;
+	LPF LPF_current_d, LPF_current_q, LPF_velocity, LPF_angle, LPF_angle_measure;
 
 	TIM_HandleTypeDef *timer; /* PWM timer handle */
 	uint8_t pwm_ch1, pwm_ch2, pwm_ch3; /* Externally set PWM channels */
-	uint16_t pwm_period;
+	uint16_t pwm_period; /* */
 
 	float curr_angle, zero_pos;
 	float curr_angle_map, zero_pos_map, angle, prev_angle; /* Current motor angle */
@@ -48,8 +52,6 @@ typedef struct MotorDriver{
 
 	/* Amount of pole pairs in the motor*/
 	uint16_t pole_pairs;
-	/* In which direction the sensor is turned when driving the motor */
-	int8_t direction;
 } MotorDriver;
 
 uint8_t drv8313_init(MotorDriver *driver, TIM_HandleTypeDef *htim);

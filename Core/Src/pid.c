@@ -16,8 +16,9 @@ void PID_Init(struct PID *pid) {
 	pid->Kp = 0.0f;
 	pid->Ki = 0.0f;
 	pid->Kd = 0.0f;
+	pid->tau = 0.001f;
 
-	pid->timestamp_prev = get_us();
+	pid->timestamp_prev = get_ms();
 }
 
 /**
@@ -27,8 +28,8 @@ void PID_Init(struct PID *pid) {
  */
 float PID_Update(struct PID *pid, float setpoint, float meas) {
 
-	uint32_t timestamp_now = get_us();
-	float Ts = (timestamp_now - pid->timestamp_prev) * 1e-6f;
+	uint32_t timestamp_now = get_ms();
+	float Ts = (timestamp_now - pid->timestamp_prev) * 1e-3f;
 	/* fix micros overflow */
 	if(Ts <= 0.0f || Ts > 0.5f) Ts = 1e-3f;
 
@@ -56,16 +57,18 @@ float PID_Update(struct PID *pid, float setpoint, float meas) {
 	}
 
 	/* Clamp integrator -> prevents integrator from growing out of proportions */
-	pid->integrator = _constrain(pid->integrator, lim_min_int, lim_max_int);
+	pid->integrator = _clamp(pid->integrator, lim_min_int, lim_max_int);
 
 	/* Derivative: might not be necessary for FOC */
-	pid->differentiator = pid->Kd * (err - pid->prevErr)/Ts;
+	pid->differentiator = (2.0f * pid->Kd * (meas - pid->prevMeas)
+			+ (2.0f * pid->tau - pid->Ts) * pid->differentiator)
+			/ (2.0f * pid->tau + pid->Ts);
 
 	/* Output */
 	pid->out = prop + pid->integrator + pid->differentiator;
 
 	/* Limiter */
-	pid->out = _constrain(pid->out, pid->lim_min, pid->lim_max);
+	pid->out = _clamp(pid->out, pid->lim_min, pid->lim_max);
 
 	/* Store error and measurement in PID struct*/
 	pid->prevErr = err;

@@ -76,6 +76,8 @@ void Error_Handler(void);
 #define MotorY_pwm2_GPIO_Port GPIOA
 #define MotorX_i_b_Pin GPIO_PIN_4
 #define MotorX_i_b_GPIO_Port GPIOA
+#define FLAG_WHILE_LOOP_DONE_Pin GPIO_PIN_4
+#define FLAG_WHILE_LOOP_DONE_GPIO_Port GPIOC
 #define BMI270_CS_Pin GPIO_PIN_0
 #define BMI270_CS_GPIO_Port GPIOB
 #define MotorY_i_a_Pin GPIO_PIN_1

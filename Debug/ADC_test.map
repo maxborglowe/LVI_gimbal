@@ -925,7 +925,7 @@ Discarded input sections
  .bss.gy_s      0x0000000000000000        0x4 ./Core/Src/main.o
  .bss.gz_s      0x0000000000000000        0x4 ./Core/Src/main.o
  .bss.zero_c    0x0000000000000000        0x1 ./Core/Src/main.o
- .data.ina181_gain
+ .data.current_sense_gain
                 0x0000000000000000        0x4 ./Core/Src/main.o
  .debug_macro   0x0000000000000000      0xaa8 ./Core/Src/main.o
  .debug_macro   0x0000000000000000      0x2a7 ./Core/Src/main.o

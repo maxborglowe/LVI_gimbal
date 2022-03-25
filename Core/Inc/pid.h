@@ -18,6 +18,7 @@ typedef struct PID {
 
 	uint32_t timestamp_prev;
 	float Ts; /* Sample time in seconds */
+	float tau; /* Derivative filter time constant */
 
 	float integrator, prevErr;
 	float differentiator, prevMeas;

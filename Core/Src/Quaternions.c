@@ -43,7 +43,6 @@ void filterUpdate(float gx, float gy, float gz, float ax, float ay, float az, fl
 
 	// Compute feedback only if accelerometer measurement valid (avoids NaN in accelerometer normalisation)
 	if (!((ax == 0.0f) && (ay == 0.0f) && (az == 0.0f))) {
-
 		// Normalise accelerometer measurement
 		recipNorm = invSqrt(ax * ax + ay * ay + az * az);
 		ax *= recipNorm;
@@ -86,10 +85,10 @@ void filterUpdate(float gx, float gy, float gz, float ax, float ay, float az, fl
 	}
 
 	// Integrate rate of change of quaternion to yield quaternion
-	q0 += qDot1 * (1.0f * time);
-	q1 += qDot2 * (1.0f * time);
-	q2 += qDot3 * (1.0f * time);
-	q3 += qDot4 * (1.0f * time);
+	q0 += qDot1 * time;
+	q1 += qDot2 * time;
+	q2 += qDot3 * time;
+	q3 += qDot4 * time;
 
 	// Normalise quaternion
 	recipNorm = invSqrt(q0 * q0 + q1 * q1 + q2 * q2 + q3 * q3);
@@ -122,8 +121,8 @@ struct EulerAngles ToEulerAngles(float _q0, float _q1, float _q2, float _q3) {
 //		angles.y = asin(sinp);
 
 	// yaw (z-axis rotation)
-	angles.z = atan2(2 * (_q0 * _q3 + _q1 * _q2),
-			_q0 * _q0 + _q1 * _q1 - _q2 * _q2 - _q3 * _q3);
+//	angles.z = atan2(2 * (_q0 * _q3 + _q1 * _q2),
+//			_q0 * _q0 + _q1 * _q1 - _q2 * _q2 - _q3 * _q3);
 
 	return angles;
 }

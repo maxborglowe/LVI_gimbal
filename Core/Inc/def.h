@@ -17,17 +17,15 @@
  * Set these to configure what is read, written, printed, etc. in the while loop
  * 0 = disable function, 1 = enable function*/
 //######################################
-#define USE_SIM 0
-#define USE_ICM20602 0
 #define USE_BMI270 1
 #define USE_AS5048A 1
 #define USE_DRV8313 1
 #define USE_PRINT 0
 #define USE_IMU_VIS 0
-
-#define BMI270_CONFIG_DONE 0
 //######################################
 
+/* GPIO stuff */
+//######################################
 #define PINBUS_ENC GPIOB
 #define PIN_ENC_X GPIO_PIN_4
 #define PIN_ENC_Y GPIO_PIN_5
@@ -42,14 +40,38 @@
 #define PIN_nFAULT_Y GPIO_PIN_15
 #define PIN_nFAULT_Z GPIO_PIN_12
 
-/* Math stuff */
-#define _sign(a) (((a) < 0)? -1: ((a) > 0))
-#define _round(x) ((x)>=0? (long)((x)+0.5f): (long)((x)-0.5f))
-#define _constrain(amt,low,high) ((amt)<(low)?(low):((amt)>(high)?(high):(amt)))
 
+/* IMU stuff */
+//######################################
 #define AXIS_X 0
 #define AXIS_Y 1
 #define AXIS_Z 2
+//######################################
+
+/* Motor & CurrentSense stuff*/
+//######################################
+#define BLDC_MAX_VOLTAGE 12.0f
+#define BLDC_MIN_VOLTAGE 0.0f
+#define BLDC_PHASE_RESISTANCE 5.275f /* Measured line-to-line resistance divided by 2 */
+
+#define CONTROL_TYPE 1
+#define CONTROL_VELOCITY 0
+#define CONTROL_POSITION 1
+
+#define ADC_REF_VOLTAGE 3.3f
+#define ADC_MAX_DIGITAL_VALUE DIGITAL_MAX_8BIT
+#define CURRENT_SENSE_RESISTANCE 0.226f
+#define CURRENT_SENSE_GAIN 20.0f //INAx181A1 gain = 20x
+
+#define DIGITAL_MAX_12BIT (4096-1)
+#define DIGITAL_MAX_10BIT (1024-1)
+#define DIGITAL_MAX_8BIT (256-1)
+
+/* Math stuff */
+//######################################
+#define _sign(a) (((a) < 0)? -1: ((a) > 0))
+#define _round(x) ((x)>=0? (long)((x)+0.5f): (long)((x)-0.5f))
+#define _clamp(amt,low,high) ((amt)<(low)?(low):((amt)>(high)?(high):(amt)))
 
 #define _1_SQRT2 0.7071067
 #define _1_SQRT3 0.5773503
@@ -70,19 +92,8 @@
 #define _3PI_2 	4.71238898038f
 #define _2PI 	6.28318530718f
 
-#define CW 1
-#define CCW -1
-
-#define CONTROL_TYPE 1
-#define CONTROL_VELOCITY 0
-#define CONTROL_POSITION 1
-
 #define DEG_TO_RAD 0.01745329251f
 #define RAD_TO_DEG 57.2957795457f
-
-#define BLDC_MAX_VOLTAGE 12.0f
-#define BLDC_MIN_VOLTAGE 0.0f
-#define BLDC_PHASE_RESISTANCE 5.275f /* Measured line-to-line resistance divided by 2 */
 
 #define BUFF_SIZE 4096 			/* UART buffer size*/
 

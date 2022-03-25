@@ -1,8 +1,8 @@
-FOC.c:14:7:sqrtApprox	0	static
-FOC.c:30:7:_normalizeAngle	8	static
-FOC.c:38:6:foc_ClarkePark	32	static
-FOC.c:95:6:foc_getElectricalAngle	8	static
-FOC.c:142:6:foc_pi_control	16	static
-FOC.c:169:6:foc_invPark	0	static
-FOC.c:178:6:foc_setPhaseVoltage	48	static
-FOC.c:113:6:foc_update	48	static
+FOC.c:12:7:sqrtApprox	0	static
+FOC.c:28:7:_normalizeAngle	8	static
+FOC.c:36:6:foc_ClarkePark	32	static
+FOC.c:93:6:foc_getElectricalAngle	8	static
+FOC.c:139:6:foc_pi_control	16	static
+FOC.c:166:6:foc_invPark	0	static
+FOC.c:175:6:foc_setPhaseVoltage	48	static
+FOC.c:110:6:foc_update	40	static

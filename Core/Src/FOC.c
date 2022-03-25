@@ -8,8 +8,6 @@
 #include <foc.h>
 
 float cos_val, sin_val;
-uint16_t move_counter = 0;
-uint16_t move_exec = 5;
 
 float sqrtApprox(float number) {    //low in fat
 	int32_t i;
@@ -93,10 +91,9 @@ void foc_ClarkePark(MotorDriver *driver) {
  * @brief Derive the electrical angle from rotor mechanical angle and amount of pole-pairs
  */
 void foc_getElectricalAngle(MotorDriver *driver) {
-	float offset = 0 * DEG_TO_RAD;
 	/* Derive electrical angle by multiplying mech. angle by pole-pair amount (and modulus 360˚)*/
 	driver->angle_electrical = fmod(
-			driver->pole_pairs * driver->angle + offset - _PI, _2PI);
+			driver->pole_pairs * driver->angle + driver->offset - _PI, _2PI);
 }
 
 /**
@@ -113,7 +110,7 @@ void foc_getElectricalAngle(MotorDriver *driver) {
 void foc_update(MotorDriver *driver, float target) {
 
 	/* down-sampling procedure */
-	if (!move_counter) {
+//	if (!driver->update_ctr) {
 		/* Read mechanical angle */
 		as5048a_getAngle(driver);
 		/* Get the electrical angle*/
@@ -125,8 +122,8 @@ void foc_update(MotorDriver *driver, float target) {
 		/* PI control: (Position -->) Velocity --> Direct + Quadrature*/
 		as5048a_getVelocity(driver);
 		foc_pi_control(driver, target);
-	}
-	move_counter = (move_counter + 1) % move_exec;
+//	}
+//	driver->update_ctr = (driver->update_ctr + 1) % driver->update_goal;
 
 	/* Inverse Park transformation */
 	foc_invPark(driver);
@@ -144,12 +141,12 @@ void foc_pi_control(MotorDriver *driver, float target) {
 
 
 	/* Check which type of regulation should be used */
-	if (CONTROL_TYPE == CONTROL_POSITION){
+//	if (CONTROL_TYPE == CONTROL_POSITION){
 		driver->velocity_target = PID_Update(&driver->pos_reg, target, driver->angle);
-	}
-	else if (CONTROL_TYPE == CONTROL_VELOCITY){
-		driver->velocity_target = target;
-	}
+//	}
+//	else if (CONTROL_TYPE == CONTROL_VELOCITY){
+//		driver->velocity_target = target;
+//	}
 
 	/* Velocity regulation --> i_qref
 	 * Note: Setpoint should be set by main function later*/

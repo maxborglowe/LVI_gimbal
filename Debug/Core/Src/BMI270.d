@@ -31,7 +31,8 @@ Core/Src/BMI270.o: ../Core/Src/BMI270.c ../Core/Inc/BMI270.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim_ex.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h \
- ../Core/Inc/def.h ../Core/Inc/Quaternions.h ../Core/Inc/time_utils.h
+ ../Core/Inc/def.h ../Core/Inc/Quaternions.h ../Core/Inc/time_utils.h \
+ ../Core/Inc/LowPassFilter.h
 
 ../Core/Inc/BMI270.h:
 
@@ -104,3 +105,5 @@ Core/Src/BMI270.o: ../Core/Src/BMI270.c ../Core/Inc/BMI270.h \
 ../Core/Inc/Quaternions.h:
 
 ../Core/Inc/time_utils.h:
+
+../Core/Inc/LowPassFilter.h:
