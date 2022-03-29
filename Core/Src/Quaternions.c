@@ -5,8 +5,10 @@
  *      Author: maxborglowe
  */
 
+#include <FastTrigonometry.h>
 #include <math.h>
 #include "Quaternions.h"
+#include "stm32f4xx_hal.h"
 
 /*
  * @brief Set the sample frequency based on the while loop cycle time (in milliseconds)
@@ -28,6 +30,8 @@ float setSampleFreq_us(uint32_t us) {
  * @param Time passed since last conversion
  */
 void filterUpdate(float gx, float gy, float gz, float ax, float ay, float az, float time) {
+
+
 
 	float recipNorm;
 	float s0, s1, s2, s3;
@@ -96,6 +100,8 @@ void filterUpdate(float gx, float gy, float gz, float ax, float ay, float az, fl
 	q1 *= recipNorm;
 	q2 *= recipNorm;
 	q3 *= recipNorm;
+
+
 }
 
 /*
@@ -109,11 +115,14 @@ struct EulerAngles ToEulerAngles(float _q0, float _q1, float _q2, float _q3) {
 	struct EulerAngles angles;
 
 	// roll (x-axis rotation)
-	angles.x = -atan2(2 * (_q0 * _q1 + _q2 * _q3),
+
+	angles.x = -FastTrigonometry_atan2(2 * (_q0 * _q1 + _q2 * _q3),
 			_q0 * _q0 - _q1 * _q1 - _q2 * _q2 + _q3 * _q3);
+
 
 	// pitch (y-axis rotation)
 	angles.y = -asin(2 * (_q1 * _q3 - _q0 * _q2));
+
 //	double sinp = 2 * (_q0 * _q2 - _q3 * _q1);
 //	if (abs((int) sinp) >= 1)
 //		angles.y = copysign(M_PI / 2, sinp); // use 90 degrees if out of range

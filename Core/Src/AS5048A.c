@@ -99,7 +99,7 @@ uint8_t calcEvenParity(uint16_t value) {
  */
 void as5048a_getAngle(MotorDriver *driver) {
 	float angle = as5048a_readToAngle(as5048a_getRawRotation(driver->PIN_ENC)); //- driver->zero_pos_map;
-	driver->angle = lpf_exec(&driver->LPF_angle_measure, as5048a_normalize(angle));
+	driver->angle = lpf_exec(&driver->LPF_angle_measure, as5048a_normalize(angle)); //<-- Slows down FOC update
 }
 
 /*

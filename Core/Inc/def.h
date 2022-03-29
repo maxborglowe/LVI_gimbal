@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <math.h>
 #include "Quaternions.h"
+#include <stdint.h>
 
 #ifndef INC_DEF_H_
 #define INC_DEF_H_
@@ -72,6 +73,8 @@
 #define _sign(a) (((a) < 0)? -1: ((a) > 0))
 #define _round(x) ((x)>=0? (long)((x)+0.5f): (long)((x)-0.5f))
 #define _clamp(amt,low,high) ((amt)<(low)?(low):((amt)>(high)?(high):(amt)))
+
+#define MACLAURIN_PRECISION 2 /* How many iterations to run Maclaurin expressions. Higher value = better resolution*/
 
 #define _1_SQRT2 0.7071067
 #define _1_SQRT3 0.5773503

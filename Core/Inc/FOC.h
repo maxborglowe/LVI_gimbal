@@ -8,6 +8,7 @@
 #ifndef INC_FOC_H_
 #define INC_FOC_H_
 
+#include <FastTrigonometry.h>
 #include <LowPassFilter.h>
 #include "def.h"
 #include "pid.h"
@@ -16,6 +17,7 @@
 #include <math.h>
 #include "time_utils.h"
 #include "LowPassFilter.h"
+#include "stm32f4xx_hal.h"
 
 #define V_dc 	BLDC_MAX_VOLTAGE
 #define _1_Vdc 	1/BLDC_MAX_VOLTAGE

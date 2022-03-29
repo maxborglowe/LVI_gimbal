@@ -56,12 +56,14 @@ void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
 void Error_Handler(void);
 
 /* USER CODE BEGIN EFP */
-
+void subPid();
+void addPid();
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
 #define Reset_program_Pin GPIO_PIN_13
 #define Reset_program_GPIO_Port GPIOC
+#define Reset_program_EXTI_IRQn EXTI15_10_IRQn
 #define MotorY_i_b_Pin GPIO_PIN_0
 #define MotorY_i_b_GPIO_Port GPIOC
 #define MotorZ_i_a_Pin GPIO_PIN_1
@@ -74,6 +76,8 @@ void Error_Handler(void);
 #define MotorX_i_a_GPIO_Port GPIOA
 #define MotorY_pwm2_Pin GPIO_PIN_1
 #define MotorY_pwm2_GPIO_Port GPIOA
+#define FLAG_FUNCTION_DONE_Pin GPIO_PIN_3
+#define FLAG_FUNCTION_DONE_GPIO_Port GPIOA
 #define MotorX_i_b_Pin GPIO_PIN_4
 #define MotorX_i_b_GPIO_Port GPIOA
 #define FLAG_WHILE_LOOP_DONE_Pin GPIO_PIN_4

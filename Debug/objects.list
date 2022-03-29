@@ -2,6 +2,7 @@
 "./Core/Src/BMI270.o"
 "./Core/Src/DRV8313.o"
 "./Core/Src/FOC.o"
+"./Core/Src/FastTrigonometry.o"
 "./Core/Src/LowPassFilter.o"
 "./Core/Src/Quaternions.o"
 "./Core/Src/main.o"

@@ -76,7 +76,7 @@ uint8_t drv8313_init(MotorDriver *driver, TIM_HandleTypeDef *htim) {
 	driver->pos_reg.Kd = 0.0f;
 
 	/* imu regulator */
-	driver->imu_reg.Kp = 2.0f;
+	driver->imu_reg.Kp = 1.0f;
 	driver->imu_reg.Ki = 0.0f;
 	driver->imu_reg.Kd = 0.0f;
 

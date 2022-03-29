@@ -5,6 +5,7 @@
  *      Author: maxborglowe
  */
 
+#include <stdio.h>
 #include <foc.h>
 
 float cos_val, sin_val;
@@ -39,53 +40,16 @@ void foc_ClarkePark(MotorDriver *driver) {
 	float i_alpha = driver->i_a;
 	float i_beta = (driver->i_a + 2 * driver->i_b) * _1_SQRT3;
 
-	sin_val = sin(driver->angle_electrical);
-	cos_val = cos(driver->angle_electrical);
+//	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, SET);
+	sin_val = FastTrigonometry_sin(driver->angle_electrical);
+	cos_val = FastTrigonometry_cos(driver->angle_electrical);
+//	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, RESET);
 
 	/* Park-transform */
 	driver->i_d = i_alpha * cos_val + i_beta * sin_val;
 	driver->i_q = i_beta * cos_val - i_alpha * sin_val;
 }
 
-//void foc_alignSensorToElectric(MotorDriver *driver){
-//
-//	as5048a_getAngle(driver);
-//	float start_angle = driver->angle;
-//
-//	for (int i = 0; i <=500; i++ ) {
-//		float angle = _3PI_2 + _2PI * i / 500.0f;
-//		foc_setPhaseVoltage(driver, V_dc, 0, angle*RAD_TO_DEG);
-//	}
-//
-//	HAL_Delay(20);
-//
-//	as5048a_getAngle(driver);
-//	float mid_angle = driver->angle;
-//
-//	for (int i = 500; i >=0; i-- ) {
-//		float angle = _3PI_2 + _2PI * i / 500.0f ;
-//		foc_setPhaseVoltage(driver, V_dc, 0, angle*RAD_TO_DEG);
-//	}
-//
-//	HAL_Delay(20);
-//
-//
-//	//may not be necessary
-//	if(start_angle == mid_angle){
-//		driver->direction = 0;
-//	}
-//	else if(start_angle < mid_angle){
-//		driver->direction = CCW;
-//	}
-//	else{
-//		driver->direction = CW;
-//	}
-//
-//
-//	/* Align rotor flux */
-//
-//
-//}
 
 /**
  * @brief Derive the electrical angle from rotor mechanical angle and amount of pole-pairs
@@ -93,7 +57,7 @@ void foc_ClarkePark(MotorDriver *driver) {
 void foc_getElectricalAngle(MotorDriver *driver) {
 	/* Derive electrical angle by multiplying mech. angle by pole-pair amount (and modulus 360˚)*/
 	driver->angle_electrical = fmod(
-			driver->pole_pairs * driver->angle + driver->offset - _PI, _2PI);
+			driver->pole_pairs * driver->angle - _PI, _2PI); /* + driver->offset*/
 }
 
 /**
@@ -111,6 +75,7 @@ void foc_update(MotorDriver *driver, float target) {
 
 	/* down-sampling procedure */
 //	if (!driver->update_ctr) {
+
 		/* Read mechanical angle */
 		as5048a_getAngle(driver);
 		/* Get the electrical angle*/
@@ -130,6 +95,7 @@ void foc_update(MotorDriver *driver, float target) {
 
 	/* SVPWM */
 	foc_setPhaseVoltage(driver, driver->V_d, driver->V_q);
+
 
 }
 
@@ -153,8 +119,10 @@ void foc_pi_control(MotorDriver *driver, float target) {
 	float i_qref = PID_Update(&driver->speed_reg, driver->velocity_target,
 			driver->velocity);
 
-	driver->i_d = lpf_exec(&driver->LPF_current_d, driver->i_d);
-	driver->i_q = lpf_exec(&driver->LPF_current_q, driver->i_q);
+
+//	driver->i_d = lpf_exec(&driver->LPF_current_d, driver->i_d);
+//	driver->i_q = lpf_exec(&driver->LPF_current_q, driver->i_q);
+
 	/* current PI stuff */
 	driver->V_d = PID_Update(&driver->d_reg, 0, driver->i_d);
 	driver->V_q = PID_Update(&driver->q_reg, i_qref, driver->i_q);
@@ -174,6 +142,8 @@ void foc_invPark(MotorDriver *driver) {
  */
 void foc_setPhaseVoltage(MotorDriver *driver, float V_d, float V_q) {
 
+
+
 	float V_ref, a_duty = 0, b_duty = 0, c_duty = 0;
 
 	V_ref = sqrtApprox(V_d * V_d + V_q * V_q);
@@ -183,14 +153,16 @@ void foc_setPhaseVoltage(MotorDriver *driver, float V_d, float V_q) {
 	float m = _SQRT3 * V_ref * _1_Vdc;
 //	float theta = fmod(atan2(V_beta, V_alpha) + _2PI, _2PI);
 
-	float theta = _normalizeAngle(driver->angle_electrical + atan2(V_q, V_d));
+
+	float theta = _normalizeAngle(driver->angle_electrical + FastTrigonometry_atan2(V_q, V_d));
+
 
 	/*Sector selection*/
 	uint8_t sector = theta * _3_PI + 1;
 
 	/* Duty time calculation */
-	T1 = m * sin(sector * _PI_3 - theta);
-	T2 = m * sin(theta - (sector - 1) * _PI_3);
+	T1 = m * FastTrigonometry_sin(sector * _PI_3 - theta);
+	T2 = m * FastTrigonometry_sin(theta - (sector - 1) * _PI_3);
 	T0 = 1 - T1 - T2;
 
 	switch (sector) {

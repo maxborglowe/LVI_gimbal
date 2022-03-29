@@ -64,6 +64,11 @@ UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
 
+MotorDriver MotorX;
+MotorDriver MotorY;
+
+IMU Imu;
+
 float target_roll, target_pitch;
 
 volatile uint16_t adc_read[5];
@@ -93,6 +98,17 @@ static void MX_TIM5_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
+void addPid(){
+	Imu.roll_sp = Imu.roll;
+	Imu.pitch_sp = Imu.pitch;
+}
+
+void subPid(){
+	Imu.roll_sp = 0;
+	Imu.pitch_sp = 0;
+}
+
+
 /* USER CODE END 0 */
 
 /**
@@ -105,6 +121,8 @@ int main(void)
 
 	/*Quaternion vars*/
 	//######################################
+
+
 	volatile clock_t us_t = 0;
 	volatile clock_t us_t_prev = 0;
 
@@ -178,8 +196,6 @@ int main(void)
 
 	EulerAngles Euler;
 
-	IMU Imu;
-
 //	MotorZ.PIN_ENC = PIN_ENC_Z;
 //	MotorZ.PIN_nFAULT = PIN_nFAULT_Z;
 
@@ -211,14 +227,13 @@ int main(void)
 		bmi270_getAccConf(&Imu);
 
 		/* PID and filtering */
-		Imu.roll_sp = Imu.roll;
-		Imu.pitch_sp = Imu.pitch;
+		Imu.roll_sp = 0;
+		Imu.pitch_sp = 0;
 
 		Imu.imu_filter.Tf = 0.0f;
 	}
 
-	MotorDriver MotorX;
-	MotorDriver MotorY;
+
 //	MotorDriver MotorZ;
 
 	MotorX.PIN_ENC = PIN_ENC_X;
@@ -240,6 +255,7 @@ int main(void)
 	}
 
 	if (USE_DRV8313) {
+		FastTrigonometry_buildTable();
 		/* Initialize motor structs and start PWM*/
 		drv8313_init(&MotorX, &htim1);
 		drv8313_init(&MotorY, &htim2);
@@ -294,13 +310,12 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
 	while (1) {
-		HAL_GPIO_WritePin(GPIOC, FLAG_WHILE_LOOP_DONE_Pin, SET);
-		HAL_GPIO_WritePin(GPIOC, FLAG_WHILE_LOOP_DONE_Pin, RESET);
+
 
 //		us_t = __HAL_TIM_GET_COUNTER(&htim5);
 		t1 = HAL_GetTick();
 
-		if (USE_DRV8313) {
+//		if (USE_DRV8313) {
 			/* ADC DMA wait */
 			while (adcConvComplete == 0) {
 			}
@@ -312,39 +327,59 @@ int main(void)
 			/* get phase currents on the motor */
 			MotorX.i_a = (adc_read[0] * adc_factor - ina_ref)
 					* sense_ratio;
+
+
 			MotorX.i_b = (adc_read[1] * adc_factor - ina_ref)
 					* sense_ratio;
 			/* set SVPWM on the motor*/
-			target_roll = PID_Update(&MotorX.imu_reg, 0, Imu.roll);
+			target_roll = PID_Update(&MotorX.imu_reg, Imu.roll_sp, Imu.roll);
+
 			foc_update(&MotorX, target_roll);
+
 
 			MotorY.i_a = (adc_read[2] * adc_factor - ina_ref)
 					* sense_ratio;
 			MotorY.i_b = (adc_read[3] * adc_factor - ina_ref)
 					* sense_ratio;
-			target_pitch = PID_Update(&MotorY.imu_reg, 0, Imu.pitch);
+			target_pitch = PID_Update(&MotorY.imu_reg, Imu.pitch_sp, Imu.pitch);
 			foc_update(&MotorY, target_pitch);
-		}
 
-		HAL_GPIO_WritePin(GPIOC, FLAG_WHILE_LOOP_DONE_Pin, SET);
-		HAL_GPIO_WritePin(GPIOC, FLAG_WHILE_LOOP_DONE_Pin, RESET);
+
+//		}
+
+
+
+//		HAL_GPIO_WritePin(GPIOC, FLAG_WHILE_LOOP_DONE_Pin, SET);
+//		HAL_GPIO_WritePin(GPIOC, FLAG_WHILE_LOOP_DONE_Pin, RESET);
 
 		/* Set current encoder positions to be zero-pos when pressing blue btn on Nucleo */
-		if(USE_AS5048A && !HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_13)){
-			as5048a_setZeroArg(&MotorX, Imu.roll);
-			as5048a_setZeroArg(&MotorY, Imu.pitch);
-			Imu.roll_sp = Imu.roll;
-			Imu.pitch_sp = Imu.pitch;
+		if(HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_12)){
+
+
+
+			Imu.roll_sp = 90*DEG_TO_RAD;
+			Imu.pitch_sp = 0;
+		}
+		else if(HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_11)){
+
+
+
+			Imu.roll_sp = 0;
+			Imu.pitch_sp = 0;
 		}
 
-		if (USE_BMI270) {
+
+
+//		if (USE_BMI270) {
 			Imu.gyr_x = (int16_t) bmi270_read_gyro(AXIS_X) * Imu.inv_gyr_range;
 			Imu.gyr_y = (int16_t) bmi270_read_gyro(AXIS_Y) * Imu.inv_gyr_range;
 			Imu.gyr_z = (int16_t) bmi270_read_gyro(AXIS_Z) * Imu.inv_gyr_range;
 
-			if (!HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_13)) {
-				q0 = 1.0f, q1 = 0.0f, q2 = 0.0f, q3 = 0.0f;
-			}
+
+
+//			if (!HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_13)) {
+//				q0 = 1.0f, q1 = 0.0f, q2 = 0.0f, q3 = 0.0f;
+//			}
 
 //			bmi270_calibrateNoise(&Imu);
 
@@ -368,15 +403,21 @@ int main(void)
 			Imu.acc_y = (int16_t) bmi270_read_accel(AXIS_Y) * Imu.inv_acc_range;
 			Imu.acc_z = (int16_t) bmi270_read_accel(AXIS_Z) * Imu.inv_acc_range;
 
+			HAL_GPIO_WritePin(GPIOC, FLAG_WHILE_LOOP_DONE_Pin, SET);
+
 			filterUpdate(Imu.gyr_x * DEG_TO_RAD, Imu.gyr_y * DEG_TO_RAD,
 					Imu.gyr_z * DEG_TO_RAD, Imu.acc_x, Imu.acc_y, Imu.acc_z,
 					loop_time * 1e-3);
+
+
 
 			Euler = ToEulerAngles(q0, q1, q2, q3);
 			Imu.roll = Euler.x;
 			Imu.pitch = Euler.y;
 //			Imu.yaw = Euler.z;
-		}
+//		}
+
+
 
 
 		if (USE_PRINT) {
@@ -435,7 +476,7 @@ int main(void)
 									Imu.gyr_x, Imu.gyr_y, Imu.gyr_z, Imu.acc_x,
 									Imu.acc_y, Imu.acc_z, q0, q1, q2, q3,
 									Imu.roll * RAD_TO_DEG, Imu.pitch * RAD_TO_DEG, Imu.yaw * RAD_TO_DEG,
-									Imu.roll_sp, Imu.pitch_sp, Imu.yaw_sp);
+									Imu.roll_sp * RAD_TO_DEG, Imu.pitch_sp* RAD_TO_DEG, Imu.yaw_sp* RAD_TO_DEG);
 				}
 				HAL_UART_Transmit(&huart2, (uint8_t*) buff,
 						strlen((char*) buff),
@@ -460,6 +501,8 @@ int main(void)
 		 * The latter results in jittery movement. */
 		t2 = HAL_GetTick() - t1;
 		loop_time = t2;
+
+		HAL_GPIO_WritePin(GPIOC, FLAG_WHILE_LOOP_DONE_Pin, RESET);
 
 		/* microsecond timer */
 //		us_t_prev = __HAL_TIM_GET_COUNTER(&htim5) - us_t;
@@ -965,7 +1008,10 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(FLAG_WHILE_LOOP_DONE_GPIO_Port, FLAG_WHILE_LOOP_DONE_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(FLAG_FUNCTION_DONE_GPIO_Port, FLAG_FUNCTION_DONE_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOC, FLAG_WHILE_LOOP_DONE_Pin|GPIO_PIN_9, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOB, BMI270_CS_Pin|MotorX_encoder_CS_Pin|MotorY_encoder_CS_Pin|MotorZ_encoder_CS_Pin, GPIO_PIN_SET);
@@ -973,29 +1019,31 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(nSLEEP_GPIO_Port, nSLEEP_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_12, GPIO_PIN_RESET);
-
   /*Configure GPIO pin : Reset_program_Pin */
   GPIO_InitStruct.Pin = Reset_program_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(Reset_program_GPIO_Port, &GPIO_InitStruct);
 
+  /*Configure GPIO pin : FLAG_FUNCTION_DONE_Pin */
+  GPIO_InitStruct.Pin = FLAG_FUNCTION_DONE_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+  HAL_GPIO_Init(FLAG_FUNCTION_DONE_GPIO_Port, &GPIO_InitStruct);
+
   /*Configure GPIO pin : FLAG_WHILE_LOOP_DONE_Pin */
   GPIO_InitStruct.Pin = FLAG_WHILE_LOOP_DONE_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
   HAL_GPIO_Init(FLAG_WHILE_LOOP_DONE_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : BMI270_CS_Pin nSLEEP_Pin MotorX_encoder_CS_Pin MotorY_encoder_CS_Pin
-                           MotorZ_encoder_CS_Pin */
-  GPIO_InitStruct.Pin = BMI270_CS_Pin|nSLEEP_Pin|MotorX_encoder_CS_Pin|MotorY_encoder_CS_Pin
-                          |MotorZ_encoder_CS_Pin;
+  /*Configure GPIO pins : BMI270_CS_Pin MotorX_encoder_CS_Pin MotorY_encoder_CS_Pin MotorZ_encoder_CS_Pin */
+  GPIO_InitStruct.Pin = BMI270_CS_Pin|MotorX_encoder_CS_Pin|MotorY_encoder_CS_Pin|MotorZ_encoder_CS_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
   /*Configure GPIO pins : nFAULT_Z_Pin nFAULT_X_Pin nFAULT_Y_Pin */
@@ -1004,12 +1052,29 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : PA12 */
-  GPIO_InitStruct.Pin = GPIO_PIN_12;
+  /*Configure GPIO pin : nSLEEP_Pin */
+  GPIO_InitStruct.Pin = nSLEEP_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+  HAL_GPIO_Init(nSLEEP_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PC9 */
+  GPIO_InitStruct.Pin = GPIO_PIN_9;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : PA11 PA12 */
+  GPIO_InitStruct.Pin = GPIO_PIN_11|GPIO_PIN_12;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  /* EXTI interrupt init*/
+  HAL_NVIC_SetPriority(EXTI15_10_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
 
 }
 

@@ -768,8 +768,9 @@ void bmi270_pwr_conf(uint8_t pwr_mode) {
  */
 uint16_t bmi270_read_gyro(uint8_t axis){
 	uint16_t data;
-	data = bmi270_spi_read_8(2 * axis + REG_DATA_14);
-	data |= bmi270_spi_read_8(2 * axis + REG_DATA_14 + 1)<<8;
+	uint8_t reg = 2 * axis + REG_DATA_14;
+	data = bmi270_spi_read_8(reg);
+	data |= bmi270_spi_read_8(reg + 1)<<8;
 	return data;
 }
 
@@ -779,8 +780,9 @@ uint16_t bmi270_read_gyro(uint8_t axis){
  */
 uint16_t bmi270_read_accel(uint8_t axis){
 	uint16_t data;
-	data = bmi270_spi_read_8(2 * axis + REG_DATA_8);
-	data |= (bmi270_spi_read_8(2 * axis + REG_DATA_8 + 1)<<8);
+	uint8_t reg = 2 * axis + REG_DATA_8;
+	data = bmi270_spi_read_8(reg);
+	data |= (bmi270_spi_read_8(reg + 1)<<8);
 	return data;
 }
 
