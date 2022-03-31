@@ -16,10 +16,11 @@
 
 extern ADC_HandleTypeDef hadc1;
 
-
-/* SVPWM definitions */
-//#define DIV1_3 0.333333
-//#define DIV2_3 0.666667
+#define REGULATE_D 0
+#define REGULATE_Q 1
+#define REGULATE_SPEED 2
+#define REGULATE_POS 3
+#define REGULATE_IMU 4
 
 typedef struct MotorDriver{
 	uint16_t PIN_ENC; /* Chip select pin for encoder */
@@ -56,5 +57,6 @@ typedef struct MotorDriver{
 
 uint8_t drv8313_init(MotorDriver *driver, TIM_HandleTypeDef *htim);
 void drv8313_setPWM(MotorDriver *driver, TIM_TypeDef *tim_instance, float duty_a, float duty_b, float duty_c);
+//void drv8313_setPID(MotorDriver *driver, uint8_t regulation_sel, float P, float I, float D);
 
 #endif /* INC_DRV8313_H_ */

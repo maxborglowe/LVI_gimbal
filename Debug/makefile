@@ -49,6 +49,9 @@ default.size.stdout \
 OBJDUMP_LIST += \
 LVI_Gimbal2.list \
 
+OBJCOPY_HEX += \
+LVI_Gimbal2.hex \
+
 OBJCOPY_BIN += \
 LVI_Gimbal2.bin \
 
@@ -75,6 +78,11 @@ LVI_Gimbal2.list: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
 	@echo 'Finished building: $@'
 	@echo ' '
 
+LVI_Gimbal2.hex: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-objcopy  -O ihex $(EXECUTABLES) "LVI_Gimbal2.hex"
+	@echo 'Finished building: $@'
+	@echo ' '
+
 LVI_Gimbal2.bin: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
 	arm-none-eabi-objcopy  -O binary $(EXECUTABLES) "LVI_Gimbal2.bin"
 	@echo 'Finished building: $@'
@@ -82,10 +90,10 @@ LVI_Gimbal2.bin: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
 
 # Other Targets
 clean:
-	-$(RM) LVI_Gimbal2.bin LVI_Gimbal2.elf LVI_Gimbal2.list default.size.stdout
+	-$(RM) LVI_Gimbal2.bin LVI_Gimbal2.elf LVI_Gimbal2.hex LVI_Gimbal2.list default.size.stdout
 	-@echo ' '
 
-secondary-outputs: $(SIZE_OUTPUT) $(OBJDUMP_LIST) $(OBJCOPY_BIN)
+secondary-outputs: $(SIZE_OUTPUT) $(OBJDUMP_LIST) $(OBJCOPY_HEX) $(OBJCOPY_BIN)
 
 fail-specified-linker-script-missing:
 	@echo 'Error: Cannot find the specified linker script. Check the linker settings in the build configuration.'

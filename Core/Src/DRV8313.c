@@ -26,7 +26,6 @@ uint8_t drv8313_init(MotorDriver *driver, TIM_HandleTypeDef *htim) {
 	}
 
 	driver->update_ctr = 0;
-	driver->update_goal = 2;
 
 	driver->timer = htim;
 
@@ -57,11 +56,11 @@ uint8_t drv8313_init(MotorDriver *driver, TIM_HandleTypeDef *htim) {
 	/* d-regulator */
 	driver->d_reg.Kp = 1.0f;
 	driver->d_reg.Ki = 0.0f;
-	driver->d_reg.Kd = 0.0f;
+	driver->d_reg.Kd = 0.00f;
 	/* q-regulator */
-	driver->q_reg.Kp = 1.0f;
-	driver->q_reg.Ki = 0.0f;
-	driver->q_reg.Kd = 0.0f;
+	driver->q_reg.Kp = driver->d_reg.Kp;
+	driver->q_reg.Ki = driver->d_reg.Ki;
+	driver->q_reg.Kd = driver->d_reg.Kd;
 
 	/*Testing note for d and q regs: Set Ki to 1.0 and try making zero-pos on encoders alterable */
 
@@ -76,8 +75,8 @@ uint8_t drv8313_init(MotorDriver *driver, TIM_HandleTypeDef *htim) {
 	driver->pos_reg.Kd = 0.0f;
 
 	/* imu regulator */
-	driver->imu_reg.Kp = 1.0f;
-	driver->imu_reg.Ki = 0.0f;
+	driver->imu_reg.Kp = 90.0f;
+	driver->imu_reg.Ki = 10.0f;
 	driver->imu_reg.Kd = 0.0f;
 
 	driver->offset = 0.0f;
@@ -117,6 +116,36 @@ void drv8313_setPWM(MotorDriver *driver, TIM_TypeDef *tim_instance, float duty_a
 	tim_instance->CCR2 = duty_b * driver->pwm_period;
 	tim_instance->CCR3 = duty_c * driver->pwm_period;
 }
+
+//void drv8313_setPID(MotorDriver *driver, uint8_t regulation_sel, float P, float I, float D){
+//	switch (regulation_sel) {
+//		case REGULATE_D:
+//			driver->d_reg.Kp = P;
+//			driver->d_reg.Ki = I;
+//			driver->d_reg.Kd = D;
+//			break;
+//		case REGULATE_Q:
+//			driver->q_reg.Kp = P;
+//			driver->q_reg.Ki = I;
+//			driver->q_reg.Kd = D;
+//			break;
+//		case REGULATE_SPEED:
+//			driver->speed_reg.Kp = P;
+//			driver->speed_reg.Ki = I;
+//			driver->speed_reg.Kd = D;
+//			break;
+//		case REGULATE_POS:
+//			driver->pos_reg.Kp = P;
+//			driver->pos_reg.Ki = I;
+//			driver->pos_reg.Kd = D;
+//			break;
+//		case REGULATE_IMU:
+//			driver->imu_reg.Kp = P;
+//			driver->imu_reg.Ki = I;
+//			driver->imu_reg.Kd = D;
+//			break;
+//	}
+//}
 
 
 

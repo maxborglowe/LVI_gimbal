@@ -1,0 +1,4 @@
+FastTrigonometry.c:14:6:FastTrigonometry_buildTable	32	static
+FastTrigonometry.c:25:7:FastTrigonometry_cos	0	static
+FastTrigonometry.c:39:7:FastTrigonometry_sin	0	static
+FastTrigonometry.c:58:7:FastTrigonometry_atan2	0	static

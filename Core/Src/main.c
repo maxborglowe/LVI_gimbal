@@ -98,16 +98,6 @@ static void MX_TIM5_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
-void addPid(){
-	Imu.roll_sp = Imu.roll;
-	Imu.pitch_sp = Imu.pitch;
-}
-
-void subPid(){
-	Imu.roll_sp = 0;
-	Imu.pitch_sp = 0;
-}
-
 
 /* USER CODE END 0 */
 
@@ -210,7 +200,6 @@ int main(void)
 
 		bmi270_getGyroRange(&Imu);
 		bmi270_getAccelRange(&Imu);
-
 		bmi270_calibrateInit(&Imu, 0);
 
 		Imu.gyr_odr = gyr_odr_25; /* Set gyro 3dB LP-filter cutoff to 50Hz */
@@ -231,6 +220,8 @@ int main(void)
 		Imu.pitch_sp = 0;
 
 		Imu.imu_filter.Tf = 0.0f;
+		Imu.update_ctr = 0;
+		Imu.update_goal = 3;
 	}
 
 
@@ -255,10 +246,17 @@ int main(void)
 	}
 
 	if (USE_DRV8313) {
+
 		FastTrigonometry_buildTable();
 		/* Initialize motor structs and start PWM*/
 		drv8313_init(&MotorX, &htim1);
 		drv8313_init(&MotorY, &htim2);
+
+		MotorX.update_goal = Imu.update_goal;
+		MotorY.update_goal = Imu.update_goal;
+
+//		drv8313_setPID(&MotorX, REGULATE_IMU, 90, 0, 0);
+//		drv8313_setPID(&MotorY);
 
 //		drv8313_init(&MotorZ, &htim3);
 
@@ -310,7 +308,7 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
 	while (1) {
-
+		HAL_Delay(0);
 
 //		us_t = __HAL_TIM_GET_COUNTER(&htim5);
 		t1 = HAL_GetTick();
@@ -355,20 +353,14 @@ int main(void)
 		/* Set current encoder positions to be zero-pos when pressing blue btn on Nucleo */
 		if(HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_12)){
 
-
-
-			Imu.roll_sp = 90*DEG_TO_RAD;
+			Imu.roll_sp = -45*DEG_TO_RAD;
 			Imu.pitch_sp = 0;
 		}
 		else if(HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_11)){
 
-
-
 			Imu.roll_sp = 0;
 			Imu.pitch_sp = 0;
 		}
-
-
 
 //		if (USE_BMI270) {
 			Imu.gyr_x = (int16_t) bmi270_read_gyro(AXIS_X) * Imu.inv_gyr_range;
@@ -394,20 +386,24 @@ int main(void)
 //					Imu.gyr_y = 0.0f;
 //				}
 //				if (Imu.gyr_z > -Imu.gyr_lim_min_z
-//						&& Imu.gyr_z < Imu.gyr_lim_max_z) {
+//						&& Imu.gyr_z < Imu.gyr_slim_max_z) {
 //					Imu.gyr_z = 0.0f;
 //				}
 //			}
+
 
 			Imu.acc_x = (int16_t) bmi270_read_accel(AXIS_X) * Imu.inv_acc_range;
 			Imu.acc_y = (int16_t) bmi270_read_accel(AXIS_Y) * Imu.inv_acc_range;
 			Imu.acc_z = (int16_t) bmi270_read_accel(AXIS_Z) * Imu.inv_acc_range;
 
-			HAL_GPIO_WritePin(GPIOC, FLAG_WHILE_LOOP_DONE_Pin, SET);
+//			HAL_GPIO_WritePin(GPIOC, FLAG_WHILE_LOOP_DONE_Pin, SET);
 
+			if(Imu.update_ctr){
 			filterUpdate(Imu.gyr_x * DEG_TO_RAD, Imu.gyr_y * DEG_TO_RAD,
 					Imu.gyr_z * DEG_TO_RAD, Imu.acc_x, Imu.acc_y, Imu.acc_z,
 					loop_time * 1e-3);
+//			}
+			Imu.update_ctr = (Imu.update_ctr + 1) % Imu.update_goal;
 
 
 

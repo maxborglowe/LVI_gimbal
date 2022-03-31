@@ -143,6 +143,8 @@ typedef struct IMU{
 	float gyr_lim_max_x, gyr_lim_max_y, gyr_lim_max_z;
 
 	LPF imu_filter;
+	uint16_t update_ctr; /* Counter variable to keep track of when IMU should update */
+	uint16_t update_goal; /* The value to be reached before executing IMU update */
 
 	uint16_t calibration_c;
 	/* GYR_CONF */
