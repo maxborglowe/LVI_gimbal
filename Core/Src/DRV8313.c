@@ -54,7 +54,7 @@ uint8_t drv8313_init(MotorDriver *driver, TIM_HandleTypeDef *htim) {
 	driver->imu_reg.lim_max = 50.0f;
 
 	/* d-regulator */
-	driver->d_reg.Kp = 1.0f;
+	driver->d_reg.Kp = 1.5f;
 	driver->d_reg.Ki = 0.0f;
 	driver->d_reg.Kd = 0.00f;
 	/* q-regulator */
@@ -75,15 +75,15 @@ uint8_t drv8313_init(MotorDriver *driver, TIM_HandleTypeDef *htim) {
 	driver->pos_reg.Kd = 0.0f;
 
 	/* imu regulator */
-	driver->imu_reg.Kp = 90.0f;
+	driver->imu_reg.Kp = 7.0f;
 	driver->imu_reg.Ki = 10.0f;
 	driver->imu_reg.Kd = 0.0f;
 
 	driver->offset = 0.0f;
 
 	/* LPF config */
-	lpf_init(&driver->LPF_current_d, 0.00f);
-	lpf_init(&driver->LPF_current_q, 0.00f);
+	lpf_init(&driver->LPF_current_d, 0.04f);
+	lpf_init(&driver->LPF_current_q, 0.04f);
 	lpf_init(&driver->LPF_velocity, 0.00f);
 	lpf_init(&driver->LPF_angle, 0.00f);
 

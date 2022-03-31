@@ -219,9 +219,9 @@ int main(void)
 		Imu.roll_sp = 0;
 		Imu.pitch_sp = 0;
 
-		Imu.imu_filter.Tf = 0.0f;
+		Imu.imu_filter.Tf = 0.01f;
 		Imu.update_ctr = 0;
-		Imu.update_goal = 3;
+		Imu.update_goal = 100;
 	}
 
 
@@ -240,8 +240,8 @@ int main(void)
 		as5048a_init(&MotorY);
 //		as5048a_init(&MotorZ);
 
-		MotorX.LPF_angle_measure.Tf = 0.001f;
-		MotorY.LPF_angle_measure.Tf = 0.001f;
+		MotorX.LPF_angle_measure.Tf = 0.005f;
+		MotorY.LPF_angle_measure.Tf = 0.005f;
 //		MotorZ.LPF_angle_measure.Tf = 0.001f;
 	}
 
@@ -252,8 +252,8 @@ int main(void)
 		drv8313_init(&MotorX, &htim1);
 		drv8313_init(&MotorY, &htim2);
 
-		MotorX.update_goal = Imu.update_goal;
-		MotorY.update_goal = Imu.update_goal;
+		MotorX.update_goal = 3;
+		MotorY.update_goal = 3;
 
 //		drv8313_setPID(&MotorX, REGULATE_IMU, 90, 0, 0);
 //		drv8313_setPID(&MotorY);
@@ -313,42 +313,12 @@ int main(void)
 //		us_t = __HAL_TIM_GET_COUNTER(&htim5);
 		t1 = HAL_GetTick();
 
-//		if (USE_DRV8313) {
-			/* ADC DMA wait */
-			while (adcConvComplete == 0) {
-			}
-			adcConvComplete = 0;
-
-			/* get reference voltage on INA2181 */
-			ina_ref = adc_read[4] * adc_factor;
-
-			/* get phase currents on the motor */
-			MotorX.i_a = (adc_read[0] * adc_factor - ina_ref)
-					* sense_ratio;
-
-
-			MotorX.i_b = (adc_read[1] * adc_factor - ina_ref)
-					* sense_ratio;
-			/* set SVPWM on the motor*/
-			target_roll = PID_Update(&MotorX.imu_reg, Imu.roll_sp, Imu.roll);
-
-			foc_update(&MotorX, target_roll);
-
-
-			MotorY.i_a = (adc_read[2] * adc_factor - ina_ref)
-					* sense_ratio;
-			MotorY.i_b = (adc_read[3] * adc_factor - ina_ref)
-					* sense_ratio;
-			target_pitch = PID_Update(&MotorY.imu_reg, Imu.pitch_sp, Imu.pitch);
-			foc_update(&MotorY, target_pitch);
-
-
-//		}
 
 
 
-//		HAL_GPIO_WritePin(GPIOC, FLAG_WHILE_LOOP_DONE_Pin, SET);
-//		HAL_GPIO_WritePin(GPIOC, FLAG_WHILE_LOOP_DONE_Pin, RESET);
+
+
+
 
 		/* Set current encoder positions to be zero-pos when pressing blue btn on Nucleo */
 		if(HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_12)){
@@ -362,6 +332,9 @@ int main(void)
 			Imu.pitch_sp = 0;
 		}
 
+		if(Imu.update_ctr){
+			HAL_GPIO_WritePin(GPIOC, FLAG_WHILE_LOOP_DONE_Pin, SET);
+			HAL_GPIO_WritePin(GPIOC, FLAG_WHILE_LOOP_DONE_Pin, RESET);
 //		if (USE_BMI270) {
 			Imu.gyr_x = (int16_t) bmi270_read_gyro(AXIS_X) * Imu.inv_gyr_range;
 			Imu.gyr_y = (int16_t) bmi270_read_gyro(AXIS_Y) * Imu.inv_gyr_range;
@@ -398,22 +371,54 @@ int main(void)
 
 //			HAL_GPIO_WritePin(GPIOC, FLAG_WHILE_LOOP_DONE_Pin, SET);
 
-			if(Imu.update_ctr){
+
 			filterUpdate(Imu.gyr_x * DEG_TO_RAD, Imu.gyr_y * DEG_TO_RAD,
 					Imu.gyr_z * DEG_TO_RAD, Imu.acc_x, Imu.acc_y, Imu.acc_z,
 					loop_time * 1e-3);
-//			}
-			Imu.update_ctr = (Imu.update_ctr + 1) % Imu.update_goal;
 
 
 
 			Euler = ToEulerAngles(q0, q1, q2, q3);
-			Imu.roll = Euler.x;
-			Imu.pitch = Euler.y;
+			Imu.roll = lpf_exec(&Imu.imu_filter, Euler.x);
+			Imu.pitch = lpf_exec(&Imu.imu_filter, Euler.y);
+
+		}
+					Imu.update_ctr = (Imu.update_ctr + 1) % Imu.update_goal;
+
 //			Imu.yaw = Euler.z;
 //		}
 
+//		if (USE_DRV8313) {
+			/* ADC DMA wait */
+			while (adcConvComplete == 0) {
+			}
+			adcConvComplete = 0;
 
+			/* get reference voltage on INA2181 */
+			ina_ref = adc_read[4] * adc_factor;
+
+			/* get phase currents on the motor */
+			MotorX.i_a = (adc_read[0] * adc_factor - ina_ref)
+					* sense_ratio;
+
+
+			MotorX.i_b = (adc_read[1] * adc_factor - ina_ref)
+					* sense_ratio;
+			/* set SVPWM on the motor*/
+			target_roll = PID_Update(&MotorX.imu_reg, Imu.roll_sp, Imu.roll);
+
+			foc_update(&MotorX, target_roll);
+
+
+			MotorY.i_a = (adc_read[2] * adc_factor - ina_ref)
+					* sense_ratio;
+			MotorY.i_b = (adc_read[3] * adc_factor - ina_ref)
+					* sense_ratio;
+			target_pitch = PID_Update(&MotorY.imu_reg, Imu.pitch_sp, Imu.pitch);
+			foc_update(&MotorY, target_pitch);
+
+
+//		}
 
 
 		if (USE_PRINT) {
