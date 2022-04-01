@@ -52,8 +52,6 @@ void as5048a_init(MotorDriver *driver) {
 
 	as5048a_getAngle(driver);
 	as5048a_setZeroArg(driver, driver->angle);
-
-	lpf_init(&driver->LPF_angle_measure, 0.005f);
 }
 
 /*
@@ -99,7 +97,7 @@ uint8_t calcEvenParity(uint16_t value) {
  */
 void as5048a_getAngle(MotorDriver *driver) {
 	float angle = as5048a_readToAngle(as5048a_getRawRotation(driver->PIN_ENC)); //- driver->zero_pos_map;
-	driver->angle = lpf_exec(&driver->LPF_angle_measure, as5048a_normalize(angle)); //<-- Slows down FOC update
+	driver->angle = as5048a_normalize(angle); //<-- Slows down FOC update
 }
 
 /*

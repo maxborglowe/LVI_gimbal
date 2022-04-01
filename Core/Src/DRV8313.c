@@ -75,8 +75,8 @@ uint8_t drv8313_init(MotorDriver *driver, TIM_HandleTypeDef *htim) {
 	driver->pos_reg.Kd = 0.0f;
 
 	/* imu regulator */
-	driver->imu_reg.Kp = 7.0f;
-	driver->imu_reg.Ki = 10.0f;
+	driver->imu_reg.Kp = 10.0f;
+	driver->imu_reg.Ki = 0.0f;
 	driver->imu_reg.Kd = 0.0f;
 
 	driver->offset = 0.0f;
@@ -84,8 +84,8 @@ uint8_t drv8313_init(MotorDriver *driver, TIM_HandleTypeDef *htim) {
 	/* LPF config */
 	lpf_init(&driver->LPF_current_d, 0.04f);
 	lpf_init(&driver->LPF_current_q, 0.04f);
-	lpf_init(&driver->LPF_velocity, 0.00f);
-	lpf_init(&driver->LPF_angle, 0.00f);
+	lpf_init(&driver->LPF_velocity, 0.01f);
+	lpf_init(&driver->LPF_angle, 0.04f);
 
 	HAL_TIM_PWM_Start(driver->timer, driver->pwm_ch1);
 	HAL_TIM_PWM_Start(driver->timer, driver->pwm_ch2);

@@ -202,14 +202,14 @@ int main(void)
 		bmi270_getAccelRange(&Imu);
 		bmi270_calibrateInit(&Imu, 0);
 
-		Imu.gyr_odr = gyr_odr_25; /* Set gyro 3dB LP-filter cutoff to 50Hz */
+		Imu.gyr_odr = gyr_odr_3k2; /* Set gyro 3dB LP-filter cutoff to 50Hz */
 		Imu.gyr_bwp = gyr_osr4;
 		Imu.gyr_noise_perf = gyr_ulp;
 		Imu.gyr_filter_perf = gyr_ulp;
 		bmi270_setGyroConf(&Imu);
 		bmi270_getGyroConf(&Imu);
 
-		Imu.acc_odr = acc_odr_12p5; /* Set accel 3dB LP-filter cutoff to 50Hz */
+		Imu.acc_odr = acc_odr_1k6; /* Set accel 3dB LP-filter cutoff to 50Hz */
 		Imu.acc_bwp = acc_res_avg128;
 		Imu.acc_filter_perf = acc_ulp;
 		bmi270_setAccConf(&Imu);
@@ -219,7 +219,7 @@ int main(void)
 		Imu.roll_sp = 0;
 		Imu.pitch_sp = 0;
 
-		Imu.imu_filter.Tf = 0.01f;
+		Imu.imu_filter.Tf = 0.1f;
 		Imu.update_ctr = 0;
 		Imu.update_goal = 100;
 	}
@@ -240,8 +240,7 @@ int main(void)
 		as5048a_init(&MotorY);
 //		as5048a_init(&MotorZ);
 
-		MotorX.LPF_angle_measure.Tf = 0.005f;
-		MotorY.LPF_angle_measure.Tf = 0.005f;
+
 //		MotorZ.LPF_angle_measure.Tf = 0.001f;
 	}
 
@@ -252,8 +251,8 @@ int main(void)
 		drv8313_init(&MotorX, &htim1);
 		drv8313_init(&MotorY, &htim2);
 
-		MotorX.update_goal = 3;
-		MotorY.update_goal = 3;
+		MotorX.update_goal = 4;
+		MotorY.update_goal = 4;
 
 //		drv8313_setPID(&MotorX, REGULATE_IMU, 90, 0, 0);
 //		drv8313_setPID(&MotorY);
@@ -332,7 +331,7 @@ int main(void)
 			Imu.pitch_sp = 0;
 		}
 
-		if(Imu.update_ctr){
+//		if(Imu.update_ctr /* > 0.01 * Imu.update_goal */){
 			HAL_GPIO_WritePin(GPIOC, FLAG_WHILE_LOOP_DONE_Pin, SET);
 			HAL_GPIO_WritePin(GPIOC, FLAG_WHILE_LOOP_DONE_Pin, RESET);
 //		if (USE_BMI270) {
@@ -382,8 +381,8 @@ int main(void)
 			Imu.roll = lpf_exec(&Imu.imu_filter, Euler.x);
 			Imu.pitch = lpf_exec(&Imu.imu_filter, Euler.y);
 
-		}
-					Imu.update_ctr = (Imu.update_ctr + 1) % Imu.update_goal;
+//		}
+//		Imu.update_ctr = (Imu.update_ctr + 1) % Imu.update_goal;
 
 //			Imu.yaw = Euler.z;
 //		}

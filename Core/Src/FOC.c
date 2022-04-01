@@ -103,7 +103,9 @@ void foc_update(MotorDriver *driver, float target) {
  */
 void foc_pi_control(MotorDriver *driver, float target) {
 
-
+	/* filter BLDC angle */
+//	driver->angle = lpf_exec(&driver->LPF_angle, driver->angle);
+	lpf_exec(&driver->LPF_angle, driver->angle);
 
 	/* Check which type of regulation should be used */
 //	if (CONTROL_TYPE == CONTROL_POSITION){
@@ -113,14 +115,17 @@ void foc_pi_control(MotorDriver *driver, float target) {
 //		driver->velocity_target = target;
 //	}
 
+		/* filter velocity */
+	driver->velocity = lpf_exec(&driver->LPF_velocity, driver->velocity);
+
 	/* Velocity regulation --> i_qref
 	 * Note: Setpoint should be set by main function later*/
 	float i_qref = PID_Update(&driver->speed_reg, driver->velocity_target,
 			driver->velocity);
 
 
-//	driver->i_d = lpf_exec(&driver->LPF_current_d, driver->i_d);
-//	driver->i_q = lpf_exec(&driver->LPF_current_q, driver->i_q);
+	driver->i_d = lpf_exec(&driver->LPF_current_d, driver->i_d);
+	driver->i_q = lpf_exec(&driver->LPF_current_q, driver->i_q);
 
 	/* current PI stuff */
 	driver->V_d = PID_Update(&driver->d_reg, 0, driver->i_d);
