@@ -74,7 +74,7 @@ void foc_getElectricalAngle(MotorDriver *driver) {
 void foc_update(MotorDriver *driver, float target) {
 
 	/* down-sampling procedure */
-	if (!driver->update_ctr) {
+//	if (!driver->update_ctr) {
 		/* Read mechanical angle */
 		as5048a_getAngle(driver);
 		/* Get the electrical angle*/
@@ -86,8 +86,8 @@ void foc_update(MotorDriver *driver, float target) {
 		/* PI control: (Position -->) Velocity --> Direct + Quadrature*/
 		as5048a_getVelocity(driver);
 		foc_pi_control(driver, target);
-	}
-	driver->update_ctr = (driver->update_ctr + 1) % driver->update_goal;
+//	}
+//	driver->update_ctr = (driver->update_ctr + 1) % driver->update_goal;
 
 	/* Inverse Park transformation */
 	foc_invPark(driver);

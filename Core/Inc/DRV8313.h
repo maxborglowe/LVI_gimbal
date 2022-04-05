@@ -35,7 +35,7 @@ typedef struct MotorDriver{
 
 
 	PID d_reg, q_reg, speed_reg, pos_reg, imu_reg; /* PID regulators */
-	LPF LPF_current_d, LPF_current_q, LPF_velocity, LPF_angle;
+	LPF LPF_current_d, LPF_current_q, LPF_velocity, LPF_angle, LPF_imu;
 
 	TIM_HandleTypeDef *timer; /* PWM timer handle */
 	uint8_t pwm_ch1, pwm_ch2, pwm_ch3; /* Externally set PWM channels */

@@ -219,9 +219,9 @@ int main(void)
 		Imu.roll_sp = 0;
 		Imu.pitch_sp = 0;
 
-		Imu.imu_filter.Tf = 0.1f;
+//		Imu.imu_filter.Tf = 0.145f;
 		Imu.update_ctr = 0;
-		Imu.update_goal = 100;
+		Imu.update_goal = 2;
 	}
 
 
@@ -250,6 +250,19 @@ int main(void)
 		/* Initialize motor structs and start PWM*/
 		drv8313_init(&MotorX, &htim1);
 		drv8313_init(&MotorY, &htim2);
+
+		MotorX.LPF_current_d.Tf = 0.4f;
+		MotorX.LPF_current_q.Tf = 0.4f;
+		MotorX.LPF_velocity.Tf = 0.065f;
+		MotorX.LPF_angle.Tf = 0.185f;
+		MotorX.LPF_imu.Tf = 0.15f;
+
+		MotorY.LPF_current_d.Tf = 0.02f;
+		MotorY.LPF_current_q.Tf = 0.02f;
+		MotorY.LPF_velocity.Tf = 0.065f;
+		MotorY.LPF_angle.Tf = 0.235f;
+		MotorY.LPF_imu.Tf = 0.15f;
+
 
 		MotorX.update_goal = 4;
 		MotorY.update_goal = 4;
@@ -307,23 +320,16 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
 	while (1) {
-		HAL_Delay(0);
+//		HAL_Delay(0);
 
 //		us_t = __HAL_TIM_GET_COUNTER(&htim5);
 		t1 = HAL_GetTick();
-
-
-
-
-
-
-
 
 		/* Set current encoder positions to be zero-pos when pressing blue btn on Nucleo */
 		if(HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_12)){
 
 			Imu.roll_sp = -45*DEG_TO_RAD;
-			Imu.pitch_sp = 0;
+			Imu.pitch_sp = -45*DEG_TO_RAD;
 		}
 		else if(HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_11)){
 
@@ -332,37 +338,16 @@ int main(void)
 		}
 
 //		if(Imu.update_ctr /* > 0.01 * Imu.update_goal */){
-			HAL_GPIO_WritePin(GPIOC, FLAG_WHILE_LOOP_DONE_Pin, SET);
-			HAL_GPIO_WritePin(GPIOC, FLAG_WHILE_LOOP_DONE_Pin, RESET);
+//			HAL_GPIO_WritePin(GPIOC, FLAG_WHILE_LOOP_DONE_Pin, SET);
+//			HAL_GPIO_WritePin(GPIOC, FLAG_WHILE_LOOP_DONE_Pin, RESET);
 //		if (USE_BMI270) {
 			Imu.gyr_x = (int16_t) bmi270_read_gyro(AXIS_X) * Imu.inv_gyr_range;
 			Imu.gyr_y = (int16_t) bmi270_read_gyro(AXIS_Y) * Imu.inv_gyr_range;
 			Imu.gyr_z = (int16_t) bmi270_read_gyro(AXIS_Z) * Imu.inv_gyr_range;
 
-
-
 //			if (!HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_13)) {
 //				q0 = 1.0f, q1 = 0.0f, q2 = 0.0f, q3 = 0.0f;
 //			}
-
-//			bmi270_calibrateNoise(&Imu);
-
-			/*gyro limiter. Prevents yaw drift programmatically, with some success.*/
-//			if (Imu.calibration_c >= BMI270_CALIBRATION_TIM) {
-//				if (Imu.gyr_x > -Imu.gyr_lim_min_x
-//						&& Imu.gyr_x < Imu.gyr_lim_max_x) {
-//					Imu.gyr_x = 0.0f;
-//				}
-//				if (Imu.gyr_y > -Imu.gyr_lim_min_y
-//						&& Imu.gyr_y < Imu.gyr_lim_max_x) {
-//					Imu.gyr_y = 0.0f;
-//				}
-//				if (Imu.gyr_z > -Imu.gyr_lim_min_z
-//						&& Imu.gyr_z < Imu.gyr_slim_max_z) {
-//					Imu.gyr_z = 0.0f;
-//				}
-//			}
-
 
 			Imu.acc_x = (int16_t) bmi270_read_accel(AXIS_X) * Imu.inv_acc_range;
 			Imu.acc_y = (int16_t) bmi270_read_accel(AXIS_Y) * Imu.inv_acc_range;
@@ -370,16 +355,13 @@ int main(void)
 
 //			HAL_GPIO_WritePin(GPIOC, FLAG_WHILE_LOOP_DONE_Pin, SET);
 
-
 			filterUpdate(Imu.gyr_x * DEG_TO_RAD, Imu.gyr_y * DEG_TO_RAD,
 					Imu.gyr_z * DEG_TO_RAD, Imu.acc_x, Imu.acc_y, Imu.acc_z,
 					loop_time * 1e-3);
 
-
-
 			Euler = ToEulerAngles(q0, q1, q2, q3);
-			Imu.roll = lpf_exec(&Imu.imu_filter, Euler.x);
-			Imu.pitch = lpf_exec(&Imu.imu_filter, Euler.y);
+			Imu.roll = lpf_exec(&MotorX.LPF_imu, Euler.x);
+			Imu.pitch = lpf_exec(&MotorY.LPF_imu, Euler.y);
 
 //		}
 //		Imu.update_ctr = (Imu.update_ctr + 1) % Imu.update_goal;
@@ -405,7 +387,6 @@ int main(void)
 					* sense_ratio;
 			/* set SVPWM on the motor*/
 			target_roll = PID_Update(&MotorX.imu_reg, Imu.roll_sp, Imu.roll);
-
 			foc_update(&MotorX, target_roll);
 
 
@@ -459,24 +440,17 @@ int main(void)
 									"\r\n########## IMU DATA ##########\r\n"
 											"gyr_range: %f\r\n"
 											"acc_range: %f\r\n"
-											"loop time (us): %u\r\n"
 											"loop time (ms): %f\r\n"
-											"gyr_lim_min_x: %f\tgyr_lim_min_y: %f\tgyr_lim_min_z: %f\r\n"
-											"gyr_lim_max_x: %f\tgyr_lim_max_y: %f\tgyr_lim_max_z: %f\r\n"
 											"gyroscope x: %f˚/s, y: %f˚/s, z: %f˚/s\r\n"
 											"accelerometer x: %f m/s2, y: %f m/s2, z: %f m/s2\r\n"
 											"q0: %f, q1: %f, q2: %f, q3: %f\r\n"
 											"roll: %f, pitch: %f, yaw: %f\r\n"
 											"roll_sp: %f, pitch_sp: %f, yaw_sp: %f\r\n",
-									Imu.acc_range, Imu.gyr_range,
-									(uint32_t) us_t_prev, loop_time,
-									Imu.gyr_lim_min_x, Imu.gyr_lim_min_y,
-									Imu.gyr_lim_min_z, Imu.gyr_lim_max_x,
-									Imu.gyr_lim_max_y, Imu.gyr_lim_max_z,
+									Imu.acc_range, Imu.gyr_range, loop_time,
 									Imu.gyr_x, Imu.gyr_y, Imu.gyr_z, Imu.acc_x,
 									Imu.acc_y, Imu.acc_z, q0, q1, q2, q3,
-									Imu.roll * RAD_TO_DEG, Imu.pitch * RAD_TO_DEG, Imu.yaw * RAD_TO_DEG,
-									Imu.roll_sp * RAD_TO_DEG, Imu.pitch_sp* RAD_TO_DEG, Imu.yaw_sp* RAD_TO_DEG);
+									Imu.roll*RAD_TO_DEG, Imu.pitch*RAD_TO_DEG, Imu.yaw*RAD_TO_DEG,
+									Imu.roll_sp*RAD_TO_DEG, Imu.pitch_sp*RAD_TO_DEG, Imu.yaw_sp*RAD_TO_DEG);
 				}
 				HAL_UART_Transmit(&huart2, (uint8_t*) buff,
 						strlen((char*) buff),

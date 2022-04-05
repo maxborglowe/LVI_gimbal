@@ -10,12 +10,12 @@
 void lpf_init(struct LPF *lpf, float Tf_init){
 	lpf->Tf = Tf_init;
 	lpf->out_prev = 0;
-	lpf->timestamp_prev = get_us();
+	lpf->timestamp_prev = get_ms();
 }
 
 float lpf_exec(struct LPF *lpf, float input){
-	uint32_t timestamp = get_us();
-	float dt = (timestamp - lpf->timestamp_prev) * 1e-6f;
+	uint32_t timestamp = get_ms();
+	float dt = (timestamp - lpf->timestamp_prev) * 1e-3f;
 
 	if (dt < 0.0f ) dt = 1e-3f;
 	else if(dt > 0.3f) {

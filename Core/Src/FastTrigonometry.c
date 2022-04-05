@@ -6,11 +6,19 @@
  */
 
 #include <FastTrigonometry.h>
-#
 #include "def.h"
+
+/*#####################################################*/
+/*Fast sin and cos source: https://www.flipcode.com/archives/Fast_Trigonometry_Functions_Using_Lookup_Tables.shtml*/
+/*#####################################################*/
 
 float cossin_table[MAX_CIRCLE_ANGLE];    // Declare table of fast cosinus and sinus
 
+/**
+ * @brief Builds sine lookup table using parameters in header file, where MAX_CIRCLE_ANGLE defines
+ * the resultion of the approximation.
+ * Source: https://www.flipcode.com/archives/Fast_Trigonometry_Functions_Using_Lookup_Tables.shtml
+ */
 void FastTrigonometry_buildTable() {
 	long i;
 	for (i = 0; i < MAX_CIRCLE_ANGLE; i++) {
@@ -19,8 +27,9 @@ void FastTrigonometry_buildTable() {
 }
 
 /**
- * @brief Fast cosine approximation using Maclaurin series expansion.
+ * @brief Fast cosine approximation using lookup table.
  * @param x: input angle in radians
+ * Source: https://www.flipcode.com/archives/Fast_Trigonometry_Functions_Using_Lookup_Tables.shtml
  */
 float FastTrigonometry_cos(float x) {
 	float f = x * HALF_MAX_CIRCLE_ANGLE / _PI;
@@ -36,6 +45,11 @@ float FastTrigonometry_cos(float x) {
 	}
 }
 
+/**
+ * @brief Fast sine approximation using lookup table.
+ * @param x: input angle in radians
+ * Source: https://www.flipcode.com/archives/Fast_Trigonometry_Functions_Using_Lookup_Tables.shtml
+ */
 float FastTrigonometry_sin(float x) {
 	float f = x * HALF_MAX_CIRCLE_ANGLE / _PI;
 	int i = (int) f;
@@ -47,6 +61,8 @@ float FastTrigonometry_sin(float x) {
 		return cossin_table[i & MASK_MAX_CIRCLE_ANGLE];
 	}
 }
+/*#####################################################*/
+/*#####################################################*/
 
 
 /**
