@@ -10,11 +10,10 @@
 
 #include <stdint.h>
 
-#define MAX_CIRCLE_ANGLE 8192
+#define MAX_CIRCLE_ANGLE 8192 /** Sin/cos approximation resolution Note: larger values --> more memory required */
 #define HALF_MAX_CIRCLE_ANGLE (MAX_CIRCLE_ANGLE/2)
 #define QUARTER_MAX_CIRCLE_ANGLE (MAX_CIRCLE_ANGLE/4)
 #define MASK_MAX_CIRCLE_ANGLE (MAX_CIRCLE_ANGLE - 1)
-
 
 void FastTrigonometry_buildTable();
 float FastTrigonometry_cos(float x);

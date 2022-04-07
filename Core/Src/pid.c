@@ -60,9 +60,10 @@ float PID_Update(struct PID *pid, float setpoint, float meas) {
 	pid->integrator = _clamp(pid->integrator, lim_min_int, lim_max_int);
 
 	/* Derivative: might not be necessary for FOC */
-	pid->differentiator = (2.0f * pid->Kd * (meas - pid->prevMeas)
-			+ (2.0f * pid->tau - pid->Ts) * pid->differentiator)
-			/ (2.0f * pid->tau + pid->Ts);
+	pid->differentiator = pid->Kd*(err - pid->prevErr) / Ts;
+//	pid->differentiator = (2.0f * pid->Kd * (meas - pid->prevMeas)
+//			+ (2.0f * pid->tau - pid->Ts) * pid->differentiator)
+//			/ (2.0f * pid->tau + pid->Ts);
 
 	/* Output */
 	pid->out = prop + pid->integrator + pid->differentiator;

@@ -22,8 +22,8 @@ uint8_t drv8313_init(MotorDriver *driver, TIM_HandleTypeDef *htim) {
 //	HAL_Delay(1); //Misread prevention delay.
 
 	/* Wait for nFAULT to flag inactive HIGH, before init */
-	while(!HAL_GPIO_ReadPin(PINBUS_DRV8313, driver->PIN_nFAULT)) {
-	}
+//	while(!HAL_GPIO_ReadPin(PINBUS_DRV8313, driver->PIN_nFAULT)) {
+//	}
 
 	driver->update_ctr = 0;
 
@@ -54,9 +54,9 @@ uint8_t drv8313_init(MotorDriver *driver, TIM_HandleTypeDef *htim) {
 	driver->imu_reg.lim_max = 6283.2f;
 
 	/* d-regulator */
-	driver->d_reg.Kp = 1.75f;
-	driver->d_reg.Ki = 0.0f;
-	driver->d_reg.Kd = 0.00f;
+	driver->d_reg.Kp = 1.5f;
+	driver->d_reg.Ki = 0.001f;
+	driver->d_reg.Kd = 0.00001f;
 	/* q-regulator */
 	driver->q_reg.Kp = driver->d_reg.Kp;
 	driver->q_reg.Ki = driver->d_reg.Ki;
@@ -66,27 +66,27 @@ uint8_t drv8313_init(MotorDriver *driver, TIM_HandleTypeDef *htim) {
 
 	/* speed regulator */
 	driver->speed_reg.Kp = 1.0f;
-	driver->speed_reg.Ki = 0.0f;
-	driver->speed_reg.Kd = 0.0f; /* NOPE. DON'T. EDIT. */
+	driver->speed_reg.Ki = 0.001f;
+	driver->speed_reg.Kd = 0.001f; /* NOPE. DON'T. EDIT. */
 
 	/* position regulator */
-	driver->pos_reg.Kp = 1.0f;
+	driver->pos_reg.Kp = 0.85f;
 	driver->pos_reg.Ki = 0.0f;
-	driver->pos_reg.Kd = 0.0f;
+	driver->pos_reg.Kd = 0.01f;
 
 	/* imu regulator */
 	driver->imu_reg.Kp = 7.0f;
-	driver->imu_reg.Ki = 0.0f;
-	driver->imu_reg.Kd = 0.0f;
+	driver->imu_reg.Ki = 9.066f;
+	driver->imu_reg.Kd = 0.05f;
 
 	driver->offset = 0.0f;
 
 	/* LPF config */
-	lpf_init(&driver->LPF_current_d, 0.02f);
-	lpf_init(&driver->LPF_current_q, 0.02f);
-	lpf_init(&driver->LPF_velocity, 0.065f);
-	lpf_init(&driver->LPF_angle, 0.185f);
-	lpf_init(&driver->LPF_imu, 0.25f);
+	lpf_init(&driver->LPF_current_d, 0.001f);
+	lpf_init(&driver->LPF_current_q, 0.001f);
+	lpf_init(&driver->LPF_velocity, 0.1f);
+	lpf_init(&driver->LPF_angle, 0.07f);
+	lpf_init(&driver->LPF_imu, 0.16f);
 
 	HAL_TIM_PWM_Start(driver->timer, driver->pwm_ch1);
 	HAL_TIM_PWM_Start(driver->timer, driver->pwm_ch2);
