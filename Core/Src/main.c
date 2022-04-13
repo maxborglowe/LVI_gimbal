@@ -249,7 +249,7 @@ int main(void) {
 		MotorX.LPF_current_q.Tf = MotorX.LPF_current_q.Tf;
 		MotorX.LPF_velocity.Tf = 0.045f;
 		MotorX.LPF_angle.Tf = 0.016f;
-		MotorX.LPF_imu.Tf = 0.16f;
+		MotorX.LPF_imu.Tf = 0.6f;
 
 		/* d-regulator */
 		MotorX.d_reg.Kp = 1.75f;
@@ -285,7 +285,7 @@ int main(void) {
 		MotorY.LPF_current_q.Tf = MotorY.LPF_current_d.Tf;
 		MotorY.LPF_velocity.Tf = 0.1f;
 		MotorY.LPF_angle.Tf = 0.1f;
-		MotorY.LPF_imu.Tf = 0.16f;
+		MotorY.LPF_imu.Tf = 0.6f;
 
 		/* d-regulator */
 		MotorY.d_reg.Kp = 1.4f;

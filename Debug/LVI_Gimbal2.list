@@ -5745,7 +5745,7 @@ int main(void) {
  80031b2:	4de3      	ldr	r5, [pc, #908]	; (8003540 <main+0x940>)
 	MotorX.PIN_ENC = PIN_ENC_X;
  80031b4:	f8df 83ec 	ldr.w	r8, [pc, #1004]	; 80035a4 <main+0x9a4>
-		MotorX.LPF_imu.Tf = 0.16f;
+		MotorX.LPF_imu.Tf = 0.6f;
  80031b8:	ed9f 9ae2 	vldr	s18, [pc, #904]	; 8003544 <main+0x944>
 		MotorX.d_reg.Kd = 0.00001f;
  80031bc:	f8df b3e8 	ldr.w	fp, [pc, #1000]	; 80035a8 <main+0x9a8>
@@ -5901,7 +5901,7 @@ __STATIC_INLINE void DWT_Init(void)
  80032c6:	ed88 8a35 	vstr	s16, [r8, #212]	; 0xd4
 		MotorX.imu_reg.Kd = 0.0f;
  80032ca:	ed88 8a42 	vstr	s16, [r8, #264]	; 0x108
-		MotorX.LPF_imu.Tf = 0.16f;
+		MotorX.LPF_imu.Tf = 0.6f;
  80032ce:	ed88 9a5b 	vstr	s18, [r8, #364]	; 0x16c
 		MotorX.d_reg.Kd = 0.00001f;
  80032d2:	f8c8 b038 	str.w	fp, [r8, #56]	; 0x38
@@ -5938,7 +5938,7 @@ __STATIC_INLINE void DWT_Init(void)
 		HAL_ADC_Start_DMA(&hadc1, (uint32_t*) adc_read, 5);
  8003308:	499d      	ldr	r1, [pc, #628]	; (8003580 <main+0x980>)
  800330a:	489e      	ldr	r0, [pc, #632]	; (8003584 <main+0x984>)
-		MotorY.LPF_imu.Tf = 0.16f;
+		MotorY.LPF_imu.Tf = 0.6f;
  800330c:	ed85 9a5b 	vstr	s18, [r5, #364]	; 0x16c
 		HAL_ADC_Start_DMA(&hadc1, (uint32_t*) adc_read, 5);
  8003310:	2205      	movs	r2, #5
@@ -6184,7 +6184,7 @@ __STATIC_INLINE void DWT_Init(void)
  8003538:	2000a228 	.word	0x2000a228
  800353c:	00000000 	.word	0x00000000
  8003540:	2000e29c 	.word	0x2000e29c
- 8003544:	3e23d70a 	.word	0x3e23d70a
+ 8003544:	3f19999a 	.word	0x3f19999a
  8003548:	2000e678 	.word	0x2000e678
  800354c:	3a83126f 	.word	0x3a83126f
  8003550:	e000edf0 	.word	0xe000edf0
