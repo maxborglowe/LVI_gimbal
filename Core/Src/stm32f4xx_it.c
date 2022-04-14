@@ -204,8 +204,9 @@ void SysTick_Handler(void)
 void EXTI15_10_IRQHandler(void)
 {
   /* USER CODE BEGIN EXTI15_10_IRQn 0 */
-
+	 HAL_GPIO_EXTI_IRQHandler(Motor_selector_Pin);
   /* USER CODE END EXTI15_10_IRQn 0 */
+  HAL_GPIO_EXTI_IRQHandler(nFAULT_Z_Pin);
   HAL_GPIO_EXTI_IRQHandler(Reset_program_Pin);
   /* USER CODE BEGIN EXTI15_10_IRQn 1 */
 
