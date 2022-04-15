@@ -253,14 +253,14 @@ int main(void)
 		drv8313_init(&MotorX, &htim1);
 
 		/*Filtering*/
-		MotorX.LPF_current_d.Tf = 0.002f;
+		MotorX.LPF_current_d.Tf = 0.1f;
 		MotorX.LPF_current_q.Tf = MotorX.LPF_current_q.Tf;
-		MotorX.LPF_velocity.Tf = 0.045f;
-		MotorX.LPF_angle.Tf = 0.016f;
+		MotorX.LPF_velocity.Tf = 0.3f;
+		MotorX.LPF_angle.Tf = 0.4f;
 		MotorX.LPF_imu.Tf = 0.6f;
 
 		/* d-regulator */
-		MotorX.d_reg.Kp = 1.75f;
+		MotorX.d_reg.Kp = 1.25f;
 		MotorX.d_reg.Ki = 0.001f;
 		MotorX.d_reg.Kd = 0.00001f;
 		/* q-regulator */
@@ -269,12 +269,12 @@ int main(void)
 		MotorX.q_reg.Kd = MotorX.d_reg.Kd;
 
 		/* speed regulator */
-		MotorX.speed_reg.Kp = 1.0f;
+		MotorX.speed_reg.Kp = 0.5f;
 		MotorX.speed_reg.Ki = 0.00f;
 		MotorX.speed_reg.Kd = 0.00f;
 
 		/* position regulator */
-		MotorX.pos_reg.Kp = 1.0f;
+		MotorX.pos_reg.Kp = 2.0f;
 		MotorX.pos_reg.Ki = 0.0f;
 		MotorX.pos_reg.Kd = 0.00f;
 
@@ -289,14 +289,14 @@ int main(void)
 		drv8313_init(&MotorY, &htim2);
 
 		/*Filtering*/
-		MotorY.LPF_current_d.Tf = 0.001f;
+		MotorY.LPF_current_d.Tf = 0.1f;
 		MotorY.LPF_current_q.Tf = MotorY.LPF_current_d.Tf;
-		MotorY.LPF_velocity.Tf = 0.1f;
-		MotorY.LPF_angle.Tf = 0.1f;
+		MotorY.LPF_velocity.Tf = 0.3f;
+		MotorY.LPF_angle.Tf = 0.4f;
 		MotorY.LPF_imu.Tf = 0.6f;
 
 		/* d-regulator */
-		MotorY.d_reg.Kp = 1.4f;
+		MotorY.d_reg.Kp = 1.25f;
 		MotorY.d_reg.Ki = 0.001f;
 		MotorY.d_reg.Kd = 0.00001f;
 		/* q-regulator */
@@ -305,12 +305,12 @@ int main(void)
 		MotorY.q_reg.Kd = MotorY.d_reg.Kd;
 
 		/* speed regulator */
-		MotorY.speed_reg.Kp = 1.0f;
+		MotorY.speed_reg.Kp = 0.5f;
 		MotorY.speed_reg.Ki = 0.00f;
 		MotorY.speed_reg.Kd = 0.00f;
 
 		/* position regulator */
-		MotorY.pos_reg.Kp = 1.0f;
+		MotorY.pos_reg.Kp = 2.0f;
 		MotorY.pos_reg.Ki = 0.0f;
 		MotorY.pos_reg.Kd = 0.0f;
 
@@ -374,49 +374,12 @@ int main(void)
 
 	while (1) {
 
-		if(TIM3->CNT >= htim3.Init.Period - 5){
-			TIM3->CNT = htim3.Init.Period - 5;
-		}
-		else if(TIM3->CNT <= 5){
-			TIM3->CNT = 5;
-		}
-
-		if(motor_control_toggle == AXIS_X){
-			Imu.roll_sp = (0.5f * htim3.Init.Period - TIM3->CNT)*DEG_TO_RAD;
-		}
-		else if(motor_control_toggle == AXIS_Y){
-			Imu.pitch_sp = (0.5f * htim3.Init.Period - TIM3->CNT)*DEG_TO_RAD;
-		}
-
-
-//		us_t = __HAL_TIM_GET_COUNTER(&htim5);
 		t1 = HAL_GetTick();
 
-
-//		if (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_12)) {
-//
-//			Imu.roll_sp = -45*DEG_TO_RAD;//Imu.roll;
-//			Imu.pitch_sp = -45*DEG_TO_RAD;//Imu.pitch;
-//
-//
-//		}
-//		else if (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_11)) {
-//
-//			Imu.roll_sp = 0;
-//			Imu.pitch_sp = 0;
-//		}
-
-//		if(Imu.update_ctr /* > 0.01 * Imu.update_goal */){
-//			HAL_GPIO_WritePin(GPIOC, FLAG_WHILE_LOOP_DONE_Pin, SET);
-//			HAL_GPIO_WritePin(GPIOC, FLAG_WHILE_LOOP_DONE_Pin, RESET);
-//		if (USE_BMI270) {
 		Imu.gyr_x = (int16_t) bmi270_read_gyro(AXIS_X) * Imu.inv_gyr_range;
 		Imu.gyr_y = (int16_t) bmi270_read_gyro(AXIS_Y) * Imu.inv_gyr_range;
 		Imu.gyr_z = (int16_t) bmi270_read_gyro(AXIS_Z) * Imu.inv_gyr_range;
 
-//			if (!HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_13)) {
-//				q0 = 1.0f, q1 = 0.0f, q2 = 0.0f, q3 = 0.0f;
-//			}
 
 		Imu.acc_x = (int16_t) bmi270_read_accel(AXIS_X) * Imu.inv_acc_range;
 		Imu.acc_y = (int16_t) bmi270_read_accel(AXIS_Y) * Imu.inv_acc_range;
@@ -432,13 +395,7 @@ int main(void)
 		Imu.roll = lpf_exec(&MotorX.LPF_imu, Euler.x);
 		Imu.pitch = lpf_exec(&MotorY.LPF_imu, Euler.y);
 
-//		}
-//		Imu.update_ctr = (Imu.update_ctr + 1) % Imu.update_goal;
 
-//			Imu.yaw = Euler.z;
-//		}
-
-//		if (USE_DRV8313) {
 		/* ADC DMA wait */
 		while (adcConvComplete == 0) {
 		}
@@ -457,15 +414,43 @@ int main(void)
 
 		}
 		Imu.update_ctr = (Imu.update_ctr + 1) % Imu.update_goal;
-		/* set SVPWM on the motor*/
-		target_roll = PID_Update(&MotorX.imu_reg, Imu.roll_sp, Imu.roll);
-		foc_update(&MotorX, target_roll);
+
+		/* Control camera with IMU */
+		if(USE_IMU_CONTROL){
+			/* set SVPWM on the motor*/
+			/*use target_roll for IMU control*/
+			target_roll = PID_Update(&MotorX.imu_reg, Imu.roll_sp, Imu.roll);
+			foc_update(&MotorX, target_roll);
 
 
-		target_pitch = PID_Update(&MotorY.imu_reg, Imu.pitch_sp, Imu.pitch);
-		foc_update(&MotorY, target_pitch);
+			/*use target_pitch for IMU control*/
+			target_pitch = PID_Update(&MotorY.imu_reg, Imu.pitch_sp, Imu.pitch);
+			foc_update(&MotorY, target_pitch);
+		}
+		/* Control camera with joystick */
+		else{
+			if(TIM3->CNT >= htim3.Init.Period - 5){
+				TIM3->CNT = htim3.Init.Period - 5;
+			}
+			else if(TIM3->CNT <= 5){
+				TIM3->CNT = 5;
+			}
 
-//		}
+			if(motor_control_toggle == AXIS_X){
+				Imu.roll_sp = (0.5f * htim3.Init.Period - TIM3->CNT) * DEG_TO_RAD;
+			}
+			else if(motor_control_toggle == AXIS_Y){
+				Imu.pitch_sp = (0.5f * htim3.Init.Period - TIM3->CNT) * DEG_TO_RAD;
+			}
+			/* set SVPWM on the motor*/
+			/*use target_roll for IMU control*/
+			foc_update(&MotorX, Imu.roll_sp);
+
+
+			/*use target_pitch for IMU control*/
+			target_pitch = PID_Update(&MotorY.imu_reg, Imu.pitch_sp, Imu.pitch);
+			foc_update(&MotorY, Imu.pitch_sp);
+		}
 
 		if (USE_PRINT) {
 			uint16_t len = 0;
@@ -547,9 +532,6 @@ int main(void)
 		loop_time = t2;
 
 		HAL_GPIO_WritePin(GPIOC, FLAG_WHILE_LOOP_DONE_Pin, RESET);
-
-		/* microsecond timer */
-//		us_t_prev = __HAL_TIM_GET_COUNTER(&htim5) - us_t;
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -892,7 +874,7 @@ static void MX_TIM3_Init(void)
   htim3.Instance = TIM3;
   htim3.Init.Prescaler = 0;
   htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim3.Init.Period = 90;
+  htim3.Init.Period = 730;
   htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
   sConfig.EncoderMode = TIM_ENCODERMODE_TI12;

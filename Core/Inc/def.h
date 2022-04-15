@@ -23,6 +23,7 @@
 #define USE_DRV8313 1
 #define USE_PRINT 0
 #define USE_IMU_VIS 0
+#define USE_IMU_CONTROL 0 /*0 = Joystick control. 1 = IMU control*/
 //######################################
 
 /* GPIO stuff */
