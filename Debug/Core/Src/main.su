@@ -1,5 +1,10 @@
-main.c:546:6:SystemClock_Config	96	static,ignoring_inline_asm
-main.c:109:5:main	216	static,ignoring_inline_asm
-main.c:1089:6:HAL_ADC_ConvCpltCallback	0	static
-main.c:1093:6:HAL_GPIO_EXTI_Callback	0	static
-main.c:1105:6:Error_Handler	0	static,ignoring_inline_asm
+main.c:98:6:motorParams_optimized	16	static
+main.c:170:6:motorParams_demo	12	static
+main.c:242:6:motorParams_filterOff_pidOff	4	static
+main.c:314:6:motorParams_filterOn_pidOff	12	static
+main.c:386:6:motorParams_filterOff_pidOn	12	static
+main.c:868:6:SystemClock_Config	96	static,ignoring_inline_asm
+main.c:470:5:main	184	static,ignoring_inline_asm
+main.c:1411:6:HAL_ADC_ConvCpltCallback	0	static
+main.c:1415:6:HAL_GPIO_EXTI_Callback	0	static
+main.c:1433:6:Error_Handler	0	static,ignoring_inline_asm

@@ -22,8 +22,8 @@ uint8_t drv8313_init(MotorDriver *driver, TIM_HandleTypeDef *htim) {
 //	HAL_Delay(1); //Misread prevention delay.
 
 	/* Wait for nFAULT to flag inactive HIGH, before init */
-//	while(!HAL_GPIO_ReadPin(PINBUS_DRV8313, driver->PIN_nFAULT)) {
-//	}
+	while(!HAL_GPIO_ReadPin(PINBUS_DRV8313, driver->PIN_nFAULT)) {
+	}
 
 	driver->update_ctr = 0;
 

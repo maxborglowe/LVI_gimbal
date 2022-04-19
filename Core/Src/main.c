@@ -95,6 +95,367 @@ static void MX_TIM3_Init(void);
 static void MX_TIM5_Init(void);
 /* USER CODE BEGIN PFP */
 
+void motorParams_optimized(){
+	/*#######################################*/
+	/*############### MotorX ################*/
+	/*#######################################*/
+
+	/*Filtering*/
+	MotorX.LPF_current_d.Tf = 0.1f;
+	MotorX.LPF_current_q.Tf = MotorX.LPF_current_q.Tf;
+	MotorX.LPF_velocity.Tf = 0.1f;
+	MotorX.LPF_angle.Tf = 0.15f;
+	MotorX.LPF_imu.Tf = 0.2f;
+
+	/* d-regulator */
+	MotorX.d_reg.Kp = 1.25f;
+	MotorX.d_reg.Ki = 0.001f;
+	MotorX.d_reg.Kd = 0.00001f;
+	/* q-regulator */
+	MotorX.q_reg.Kp = MotorX.d_reg.Kp;
+	MotorX.q_reg.Ki = MotorX.d_reg.Ki;
+	MotorX.q_reg.Kd = MotorX.d_reg.Kd;
+
+	/* speed regulator */
+	MotorX.speed_reg.Kp = 0.75f;
+	MotorX.speed_reg.Ki = 0.00f;
+	MotorX.speed_reg.Kd = 0.00f;
+
+	/* position regulator */
+	MotorX.pos_reg.Kp = 2.0f;
+	MotorX.pos_reg.Ki = 0.0f;
+	MotorX.pos_reg.Kd = 0.00f;
+
+	/* imu regulator */
+	MotorX.imu_reg.Kp = 7.0f;
+	MotorX.imu_reg.Ki = 9.066f;
+	MotorX.imu_reg.Kd = 0.0f;
+
+	/*#######################################*/
+	/*############### MotorY ################*/
+	/*#######################################*/
+
+	/*Filtering*/
+	MotorY.LPF_current_d.Tf = 0.1f;
+	MotorY.LPF_current_q.Tf = MotorY.LPF_current_d.Tf;
+	MotorY.LPF_velocity.Tf = 0.1f;
+	MotorY.LPF_angle.Tf = 0.15f;
+	MotorY.LPF_imu.Tf = 0.2f;
+
+	/* d-regulator */
+	MotorY.d_reg.Kp = 1.6f;
+	MotorY.d_reg.Ki = 0.001f;
+	MotorY.d_reg.Kd = 0.00001f;
+	/* q-regulator */
+	MotorY.q_reg.Kp = MotorY.d_reg.Kp;
+	MotorY.q_reg.Ki = MotorY.d_reg.Ki;
+	MotorY.q_reg.Kd = MotorY.d_reg.Kd;
+
+	/* speed regulator */
+	MotorY.speed_reg.Kp = 0.75f;
+	MotorY.speed_reg.Ki = 0.00f;
+	MotorY.speed_reg.Kd = 0.00f;
+
+	/* position regulator */
+	MotorY.pos_reg.Kp = 2.0f;
+	MotorY.pos_reg.Ki = 0.0f;
+	MotorY.pos_reg.Kd = 0.0f;
+
+	/* imu regulator */
+	MotorY.imu_reg.Kp = 7.0f;
+	MotorY.imu_reg.Ki = 10.0f;
+	MotorY.imu_reg.Kd = 0.0f;
+}
+
+void motorParams_demo(){
+	/*#######################################*/
+	/*############### MotorX ################*/
+	/*#######################################*/
+
+	/*Filtering*/
+	MotorX.LPF_current_d.Tf = 0.1f;
+	MotorX.LPF_current_q.Tf = MotorX.LPF_current_q.Tf;
+	MotorX.LPF_velocity.Tf = 0.3f;
+	MotorX.LPF_angle.Tf = 0.35f;
+	MotorX.LPF_imu.Tf = 0.4f;
+
+	/* d-regulator */
+	MotorX.d_reg.Kp = 1.25f;
+	MotorX.d_reg.Ki = 0.001f;
+	MotorX.d_reg.Kd = 0.00001f;
+	/* q-regulator */
+	MotorX.q_reg.Kp = MotorX.d_reg.Kp;
+	MotorX.q_reg.Ki = MotorX.d_reg.Ki;
+	MotorX.q_reg.Kd = MotorX.d_reg.Kd;
+
+	/* speed regulator */
+	MotorX.speed_reg.Kp = 0.75f;
+	MotorX.speed_reg.Ki = 0.00f;
+	MotorX.speed_reg.Kd = 0.00f;
+
+	/* position regulator */
+	MotorX.pos_reg.Kp = 2.0f;
+	MotorX.pos_reg.Ki = 0.0f;
+	MotorX.pos_reg.Kd = 0.00f;
+
+	/* imu regulator */
+	MotorX.imu_reg.Kp = 7.0f;
+	MotorX.imu_reg.Ki = 9.066f;
+	MotorX.imu_reg.Kd = 0.0f;
+
+	/*#######################################*/
+	/*############### MotorY ################*/
+	/*#######################################*/
+
+	/*Filtering*/
+	MotorY.LPF_current_d.Tf = 0.1f;
+	MotorY.LPF_current_q.Tf = MotorY.LPF_current_d.Tf;
+	MotorY.LPF_velocity.Tf = 0.3f;
+	MotorY.LPF_angle.Tf = 0.35f;
+	MotorY.LPF_imu.Tf = 0.4f;
+
+	/* d-regulator */
+	MotorY.d_reg.Kp = 1.6f;
+	MotorY.d_reg.Ki = 0.001f;
+	MotorY.d_reg.Kd = 0.00001f;
+	/* q-regulator */
+	MotorY.q_reg.Kp = MotorY.d_reg.Kp;
+	MotorY.q_reg.Ki = MotorY.d_reg.Ki;
+	MotorY.q_reg.Kd = MotorY.d_reg.Kd;
+
+	/* speed regulator */
+	MotorY.speed_reg.Kp = 0.75f;
+	MotorY.speed_reg.Ki = 0.00f;
+	MotorY.speed_reg.Kd = 0.00f;
+
+	/* position regulator */
+	MotorY.pos_reg.Kp = 2.0f;
+	MotorY.pos_reg.Ki = 0.0f;
+	MotorY.pos_reg.Kd = 0.0f;
+
+	/* imu regulator */
+	MotorY.imu_reg.Kp = 7.0f;
+	MotorY.imu_reg.Ki = 10.0f;
+	MotorY.imu_reg.Kd = 0.0f;
+}
+
+void motorParams_filterOff_pidOff(){
+	/*#######################################*/
+	/*############### MotorX ################*/
+	/*#######################################*/
+
+	/*Filtering*/
+	MotorX.LPF_current_d.Tf = 0.0f;
+	MotorX.LPF_current_q.Tf = MotorX.LPF_current_q.Tf;
+	MotorX.LPF_velocity.Tf = 0.05f;
+	MotorX.LPF_angle.Tf = 0.0f;
+	MotorX.LPF_imu.Tf = 0.0f;
+
+	/* d-regulator */
+	MotorX.d_reg.Kp = 1.0f;
+	MotorX.d_reg.Ki = 0.0f;
+	MotorX.d_reg.Kd = 0.0f;
+	/* q-regulator */
+	MotorX.q_reg.Kp = MotorX.d_reg.Kp;
+	MotorX.q_reg.Ki = MotorX.d_reg.Ki;
+	MotorX.q_reg.Kd = MotorX.d_reg.Kd;
+
+	/* speed regulator */
+	MotorX.speed_reg.Kp = 1.0f;
+	MotorX.speed_reg.Ki = 0.0f;
+	MotorX.speed_reg.Kd = 0.0f;
+
+	/* position regulator */
+	MotorX.pos_reg.Kp = 1.0f;
+	MotorX.pos_reg.Ki = 0.0f;
+	MotorX.pos_reg.Kd = 0.0f;
+
+	/* imu regulator */
+	MotorX.imu_reg.Kp = 1.0f;
+	MotorX.imu_reg.Ki = 0.0f;
+	MotorX.imu_reg.Kd = 0.0f;
+
+	/*#######################################*/
+	/*############### MotorY ################*/
+	/*#######################################*/
+
+	/*Filtering*/
+	MotorY.LPF_current_d.Tf = 0.0f;
+	MotorY.LPF_current_q.Tf = MotorY.LPF_current_d.Tf;
+	MotorY.LPF_velocity.Tf = 0.05f;
+	MotorY.LPF_angle.Tf = 0.0f;
+	MotorY.LPF_imu.Tf = 0.0f;
+
+	/* d-regulator */
+	MotorY.d_reg.Kp = 1.0f;
+	MotorY.d_reg.Ki = 0.0f;
+	MotorY.d_reg.Kd = 0.0f;
+	/* q-regulator */
+	MotorY.q_reg.Kp = MotorY.d_reg.Kp;
+	MotorY.q_reg.Ki = MotorY.d_reg.Ki;
+	MotorY.q_reg.Kd = MotorY.d_reg.Kd;
+
+	/* speed regulator */
+	MotorY.speed_reg.Kp = 1.0f;
+	MotorY.speed_reg.Ki = 0.00f;
+	MotorY.speed_reg.Kd = 0.00f;
+
+	/* position regulator */
+	MotorY.pos_reg.Kp = 1.0f;
+	MotorY.pos_reg.Ki = 0.0f;
+	MotorY.pos_reg.Kd = 0.0f;
+
+	/* imu regulator */
+	MotorY.imu_reg.Kp = 1.0f;
+	MotorY.imu_reg.Ki = 0.0f;
+	MotorY.imu_reg.Kd = 0.0f;
+}
+
+void motorParams_filterOn_pidOff(){
+	/*#######################################*/
+	/*############### MotorX ################*/
+	/*#######################################*/
+
+	/*Filtering*/
+	MotorX.LPF_current_d.Tf = 0.1f;
+	MotorX.LPF_current_q.Tf = MotorX.LPF_current_q.Tf;
+	MotorX.LPF_velocity.Tf = 0.3f;
+	MotorX.LPF_angle.Tf = 0.35f;
+	MotorX.LPF_imu.Tf = 0.4f;
+
+	/* d-regulator */
+	MotorX.d_reg.Kp = 1.0f;
+	MotorX.d_reg.Ki = 0.0f;
+	MotorX.d_reg.Kd = 0.0f;
+	/* q-regulator */
+	MotorX.q_reg.Kp = MotorX.d_reg.Kp;
+	MotorX.q_reg.Ki = MotorX.d_reg.Ki;
+	MotorX.q_reg.Kd = MotorX.d_reg.Kd;
+
+	/* speed regulator */
+	MotorX.speed_reg.Kp = 1.0f;
+	MotorX.speed_reg.Ki = 0.0f;
+	MotorX.speed_reg.Kd = 0.0f;
+
+	/* position regulator */
+	MotorX.pos_reg.Kp = 1.0f;
+	MotorX.pos_reg.Ki = 0.0f;
+	MotorX.pos_reg.Kd = 0.0f;
+
+	/* imu regulator */
+	MotorX.imu_reg.Kp = 1.0f;
+	MotorX.imu_reg.Ki = 0.0f;
+	MotorX.imu_reg.Kd = 0.0f;
+
+	/*#######################################*/
+	/*############### MotorY ################*/
+	/*#######################################*/
+
+	/*Filtering*/
+	MotorY.LPF_current_d.Tf = 0.1f;
+	MotorY.LPF_current_q.Tf = MotorY.LPF_current_d.Tf;
+	MotorY.LPF_velocity.Tf = 0.3f;
+	MotorY.LPF_angle.Tf = 0.35f;
+	MotorY.LPF_imu.Tf = 0.4f;
+
+	/* d-regulator */
+	MotorY.d_reg.Kp = 1.0f;
+	MotorY.d_reg.Ki = 0.0f;
+	MotorY.d_reg.Kd = 0.0f;
+	/* q-regulator */
+	MotorY.q_reg.Kp = MotorY.d_reg.Kp;
+	MotorY.q_reg.Ki = MotorY.d_reg.Ki;
+	MotorY.q_reg.Kd = MotorY.d_reg.Kd;
+
+	/* speed regulator */
+	MotorY.speed_reg.Kp = 1.0f;
+	MotorY.speed_reg.Ki = 0.00f;
+	MotorY.speed_reg.Kd = 0.00f;
+
+	/* position regulator */
+	MotorY.pos_reg.Kp = 1.0f;
+	MotorY.pos_reg.Ki = 0.0f;
+	MotorY.pos_reg.Kd = 0.0f;
+
+	/* imu regulator */
+	MotorY.imu_reg.Kp = 1.0f;
+	MotorY.imu_reg.Ki = 0.0f;
+	MotorY.imu_reg.Kd = 0.0f;
+}
+
+void motorParams_filterOff_pidOn(){
+	/*#######################################*/
+	/*############### MotorX ################*/
+	/*#######################################*/
+
+	/*Filtering*/
+	MotorX.LPF_current_d.Tf = 0.0f;
+	MotorX.LPF_current_q.Tf = MotorX.LPF_current_q.Tf;
+	MotorX.LPF_velocity.Tf = 0.05f;
+	MotorX.LPF_angle.Tf = 0.0f;
+	MotorX.LPF_imu.Tf = 0.0f;
+
+	/* d-regulator */
+	MotorX.d_reg.Kp = 1.25f;
+	MotorX.d_reg.Ki = 0.001f;
+	MotorX.d_reg.Kd = 0.00001f;
+	/* q-regulator */
+	MotorX.q_reg.Kp = MotorX.d_reg.Kp;
+	MotorX.q_reg.Ki = MotorX.d_reg.Ki;
+	MotorX.q_reg.Kd = MotorX.d_reg.Kd;
+
+	/* speed regulator */
+	MotorX.speed_reg.Kp = 0.75f;
+	MotorX.speed_reg.Ki = 0.00f;
+	MotorX.speed_reg.Kd = 0.00f;
+
+	/* position regulator */
+	MotorX.pos_reg.Kp = 2.0f;
+	MotorX.pos_reg.Ki = 0.0f;
+	MotorX.pos_reg.Kd = 0.00f;
+
+	/* imu regulator */
+	MotorX.imu_reg.Kp = 7.0f;
+	MotorX.imu_reg.Ki = 9.066f;
+	MotorX.imu_reg.Kd = 0.0f;
+
+	/*#######################################*/
+	/*############### MotorY ################*/
+	/*#######################################*/
+
+	/*Filtering*/
+	MotorY.LPF_current_d.Tf = 0.0f;
+	MotorY.LPF_current_q.Tf = MotorY.LPF_current_d.Tf;
+	MotorY.LPF_velocity.Tf = 0.05f;
+	MotorY.LPF_angle.Tf = 0.0f;
+	MotorY.LPF_imu.Tf = 0.0f;
+
+	/* d-regulator */
+	MotorY.d_reg.Kp = 1.6f;
+	MotorY.d_reg.Ki = 0.001f;
+	MotorY.d_reg.Kd = 0.00001f;
+	/* q-regulator */
+	MotorY.q_reg.Kp = MotorY.d_reg.Kp;
+	MotorY.q_reg.Ki = MotorY.d_reg.Ki;
+	MotorY.q_reg.Kd = MotorY.d_reg.Kd;
+
+	/* speed regulator */
+	MotorY.speed_reg.Kp = 0.75f;
+	MotorY.speed_reg.Ki = 0.00f;
+	MotorY.speed_reg.Kd = 0.00f;
+
+	/* position regulator */
+	MotorY.pos_reg.Kp = 2.0f;
+	MotorY.pos_reg.Ki = 0.0f;
+	MotorY.pos_reg.Kd = 0.0f;
+
+	/* imu regulator */
+	MotorY.imu_reg.Kp = 7.0f;
+	MotorY.imu_reg.Ki = 10.0f;
+	MotorY.imu_reg.Kd = 0.0f;
+}
+
+
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -247,77 +608,17 @@ int main(void)
 	if (USE_DRV8313) {
 		FastTrigonometry_buildTable();
 
-		/*#######################################*/
-		/*############### MotorX ################*/
-		/*#######################################*/
+
 		drv8313_init(&MotorX, &htim1);
-
-		/*Filtering*/
-		MotorX.LPF_current_d.Tf = 0.1f;
-		MotorX.LPF_current_q.Tf = MotorX.LPF_current_q.Tf;
-		MotorX.LPF_velocity.Tf = 0.3f;
-		MotorX.LPF_angle.Tf = 0.4f;
-		MotorX.LPF_imu.Tf = 0.6f;
-
-		/* d-regulator */
-		MotorX.d_reg.Kp = 1.25f;
-		MotorX.d_reg.Ki = 0.001f;
-		MotorX.d_reg.Kd = 0.00001f;
-		/* q-regulator */
-		MotorX.q_reg.Kp = MotorX.d_reg.Kp;
-		MotorX.q_reg.Ki = MotorX.d_reg.Ki;
-		MotorX.q_reg.Kd = MotorX.d_reg.Kd;
-
-		/* speed regulator */
-		MotorX.speed_reg.Kp = 0.5f;
-		MotorX.speed_reg.Ki = 0.00f;
-		MotorX.speed_reg.Kd = 0.00f;
-
-		/* position regulator */
-		MotorX.pos_reg.Kp = 2.0f;
-		MotorX.pos_reg.Ki = 0.0f;
-		MotorX.pos_reg.Kd = 0.00f;
-
-		/* imu regulator */
-		MotorX.imu_reg.Kp = 7.0f;
-		MotorX.imu_reg.Ki = 9.066f;
-		MotorX.imu_reg.Kd = 0.0f;
-
-		/*#######################################*/
-		/*############### MotorY ################*/
-		/*#######################################*/
 		drv8313_init(&MotorY, &htim2);
 
-		/*Filtering*/
-		MotorY.LPF_current_d.Tf = 0.1f;
-		MotorY.LPF_current_q.Tf = MotorY.LPF_current_d.Tf;
-		MotorY.LPF_velocity.Tf = 0.3f;
-		MotorY.LPF_angle.Tf = 0.4f;
-		MotorY.LPF_imu.Tf = 0.6f;
+		motorParams_optimized();
+//		motorParams_filterOff_pidOff();
+//		motorParams_filterOn_pidOff();
+//		motorParams_filterOff_pidOn();
 
-		/* d-regulator */
-		MotorY.d_reg.Kp = 1.25f;
-		MotorY.d_reg.Ki = 0.001f;
-		MotorY.d_reg.Kd = 0.00001f;
-		/* q-regulator */
-		MotorY.q_reg.Kp = MotorY.d_reg.Kp;
-		MotorY.q_reg.Ki = MotorY.d_reg.Ki;
-		MotorY.q_reg.Kd = MotorY.d_reg.Kd;
 
-		/* speed regulator */
-		MotorY.speed_reg.Kp = 0.5f;
-		MotorY.speed_reg.Ki = 0.00f;
-		MotorY.speed_reg.Kd = 0.00f;
 
-		/* position regulator */
-		MotorY.pos_reg.Kp = 2.0f;
-		MotorY.pos_reg.Ki = 0.0f;
-		MotorY.pos_reg.Kd = 0.0f;
-
-		/* imu regulator */
-		MotorY.imu_reg.Kp = 7.0f;
-		MotorY.imu_reg.Ki = 10.0f;
-		MotorY.imu_reg.Kd = 0.0f;
 
 		MotorX.update_goal = 4;
 		MotorY.update_goal = 4;
@@ -417,6 +718,25 @@ int main(void)
 
 		/* Control camera with IMU */
 		if(USE_IMU_CONTROL){
+
+			switch (motor_control_toggle) {
+				case 0:
+					Imu.roll_sp = 0;
+					Imu.pitch_sp = 0;
+//					MotorX.imu_reg.Kp = 0.1 * TIM3->CNT;
+					break;
+				case 1:
+					Imu.roll_sp = -11.25 * DEG_TO_RAD;
+					Imu.pitch_sp = -11.25 * DEG_TO_RAD;
+//					MotorX.imu_reg.Ki = 0.5 * TIM3->CNT;
+					break;
+				case 2:
+					Imu.roll_sp = 0;
+					Imu.pitch_sp = 0;
+//					MotorX.imu_reg.Kp = 0.01 * TIM3->CNT;
+					break;
+			}
+
 			/* set SVPWM on the motor*/
 			/*use target_roll for IMU control*/
 			target_roll = PID_Update(&MotorX.imu_reg, Imu.roll_sp, Imu.roll);
@@ -429,6 +749,7 @@ int main(void)
 		}
 		/* Control camera with joystick */
 		else{
+
 			if(TIM3->CNT >= htim3.Init.Period - 5){
 				TIM3->CNT = htim3.Init.Period - 5;
 			}
@@ -444,6 +765,7 @@ int main(void)
 			}
 			/* set SVPWM on the motor*/
 			/*use target_roll for IMU control*/
+			target_roll = PID_Update(&MotorX.imu_reg, Imu.roll_sp, Imu.roll);
 			foc_update(&MotorX, Imu.roll_sp);
 
 
@@ -1092,7 +1414,13 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc) {
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
 	if(GPIO_Pin == GPIO_PIN_12){
-		motor_control_toggle = !motor_control_toggle;
+		motor_control_toggle++;
+		if(!USE_IMU_CONTROL){
+			motor_control_toggle = motor_control_toggle % 2;
+		}
+		else if(USE_IMU_CONTROL){
+			motor_control_toggle = motor_control_toggle % 3;
+		}
 	}
 }
 
