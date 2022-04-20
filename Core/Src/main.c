@@ -127,9 +127,9 @@ void motorParams_optimized(){
 	MotorX.pos_reg.Kd = 0.00f;
 
 	/* imu regulator */
-	MotorX.imu_reg.Kp = 7.0f;
-	MotorX.imu_reg.Ki = 9.066f;
-	MotorX.imu_reg.Kd = 0.0f;
+	MotorX.imu_reg.Kp = 7.89f;
+	MotorX.imu_reg.Ki = 6.566f;
+	MotorX.imu_reg.Kd = 0.51f;
 
 	/*#######################################*/
 	/*############### MotorY ################*/
@@ -162,9 +162,9 @@ void motorParams_optimized(){
 	MotorY.pos_reg.Kd = 0.0f;
 
 	/* imu regulator */
-	MotorY.imu_reg.Kp = 7.0f;
-	MotorY.imu_reg.Ki = 10.0f;
-	MotorY.imu_reg.Kd = 0.0f;
+	MotorY.imu_reg.Kp = 6.5f;
+	MotorY.imu_reg.Ki = 5.0f;
+	MotorY.imu_reg.Kd = 0.63f;
 }
 
 void motorParams_demo(){
@@ -234,9 +234,9 @@ void motorParams_demo(){
 	MotorY.pos_reg.Kd = 0.0f;
 
 	/* imu regulator */
-	MotorY.imu_reg.Kp = 7.0f;
-	MotorY.imu_reg.Ki = 10.0f;
-	MotorY.imu_reg.Kd = 0.0f;
+	MotorY.imu_reg.Kp = 6.89f;
+	MotorY.imu_reg.Ki = 9.5f;
+	MotorY.imu_reg.Kd = 0.63f;
 }
 
 void motorParams_filterOff_pidOff(){
@@ -613,6 +613,7 @@ int main(void)
 		drv8313_init(&MotorY, &htim2);
 
 		motorParams_optimized();
+//		motorParams_demo();
 //		motorParams_filterOff_pidOff();
 //		motorParams_filterOn_pidOff();
 //		motorParams_filterOff_pidOn();
@@ -716,6 +717,24 @@ int main(void)
 		}
 		Imu.update_ctr = (Imu.update_ctr + 1) % Imu.update_goal;
 
+		float increment = 0.5f * DEG_TO_RAD;
+		uint8_t DEC = 0, INC = 1, DIR = 2;
+		uint16_t midpoint = htim3.Init.Period * 0.5;
+
+		if((int16_t)(midpoint - TIM3->CNT) < 0) DIR = INC;
+		else if((int16_t)(midpoint - TIM3->CNT) > 0) DIR = DEC;
+
+		if(motor_control_toggle == AXIS_X){
+			if(DIR == INC) Imu.roll_sp += increment;
+			else if(DIR == DEC) Imu.roll_sp -= increment;
+		}
+		else if(motor_control_toggle == AXIS_Y){
+			if(DIR == INC) Imu.pitch_sp += increment;
+			else if(DIR == DEC) Imu.pitch_sp -= increment;
+		}
+
+		TIM3->CNT = midpoint;
+
 		/* Control camera with IMU */
 		if(USE_IMU_CONTROL){
 
@@ -723,17 +742,20 @@ int main(void)
 				case 0:
 					Imu.roll_sp = 0;
 					Imu.pitch_sp = 0;
-//					MotorX.imu_reg.Kp = 0.1 * TIM3->CNT;
+					if(DIR == DEC) MotorY.imu_reg.Kp -= 0.1;
+					else if(DIR == INC) MotorY.imu_reg.Kp += 0.1;
 					break;
 				case 1:
-					Imu.roll_sp = -11.25 * DEG_TO_RAD;
-					Imu.pitch_sp = -11.25 * DEG_TO_RAD;
-//					MotorX.imu_reg.Ki = 0.5 * TIM3->CNT;
+					Imu.roll_sp = -45 * DEG_TO_RAD;
+					Imu.pitch_sp = -45 * DEG_TO_RAD;
+					if(DIR == DEC) MotorY.imu_reg.Ki -= 0.5;
+					else if(DIR == INC) MotorY.imu_reg.Ki += 0.5;
 					break;
 				case 2:
-					Imu.roll_sp = 0;
-					Imu.pitch_sp = 0;
-//					MotorX.imu_reg.Kp = 0.01 * TIM3->CNT;
+					Imu.roll_sp = -45 * DEG_TO_RAD;
+					Imu.pitch_sp = -45 * DEG_TO_RAD;
+					if(DIR == DEC) MotorY.imu_reg.Kd -= 0.01;
+					else if(DIR == INC) MotorY.imu_reg.Kd += 0.01;
 					break;
 			}
 
@@ -750,27 +772,26 @@ int main(void)
 		/* Control camera with joystick */
 		else{
 
-			if(TIM3->CNT >= htim3.Init.Period - 5){
-				TIM3->CNT = htim3.Init.Period - 5;
-			}
-			else if(TIM3->CNT <= 5){
-				TIM3->CNT = 5;
-			}
 
-			if(motor_control_toggle == AXIS_X){
-				Imu.roll_sp = (0.5f * htim3.Init.Period - TIM3->CNT) * DEG_TO_RAD;
-			}
-			else if(motor_control_toggle == AXIS_Y){
-				Imu.pitch_sp = (0.5f * htim3.Init.Period - TIM3->CNT) * DEG_TO_RAD;
-			}
+
+//			if(TIM3->CNT >= htim3.Init.Period - 5){
+//				TIM3->CNT = htim3.Init.Period - 5;
+//			}
+//			else if(TIM3->CNT <= 5){
+//				TIM3->CNT = 5;
+//			}
+//
+//			if(motor_control_toggle == AXIS_X){
+//				Imu.roll_sp = (0.5f * htim3.Init.Period - TIM3->CNT) * DEG_TO_RAD;
+//			}
+//			else if(motor_control_toggle == AXIS_Y){
+//				Imu.pitch_sp = (0.5f * htim3.Init.Period - TIM3->CNT) * DEG_TO_RAD;
+//			}
 			/* set SVPWM on the motor*/
 			/*use target_roll for IMU control*/
-			target_roll = PID_Update(&MotorX.imu_reg, Imu.roll_sp, Imu.roll);
 			foc_update(&MotorX, Imu.roll_sp);
 
-
 			/*use target_pitch for IMU control*/
-			target_pitch = PID_Update(&MotorY.imu_reg, Imu.pitch_sp, Imu.pitch);
 			foc_update(&MotorY, Imu.pitch_sp);
 		}
 
