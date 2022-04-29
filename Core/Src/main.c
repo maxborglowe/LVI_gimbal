@@ -199,9 +199,9 @@ void motorParams_demo(){
 	MotorX.pos_reg.Kd = 0.00f;
 
 	/* imu regulator */
-	MotorX.imu_reg.Kp = 7.0f;
-	MotorX.imu_reg.Ki = 9.066f;
-	MotorX.imu_reg.Kd = 0.0f;
+	MotorX.imu_reg.Kp = 7.89f;
+	MotorX.imu_reg.Ki = 6.566f;
+	MotorX.imu_reg.Kd = 0.51f;
 
 	/*#######################################*/
 	/*############### MotorY ################*/
@@ -234,8 +234,8 @@ void motorParams_demo(){
 	MotorY.pos_reg.Kd = 0.0f;
 
 	/* imu regulator */
-	MotorY.imu_reg.Kp = 6.89f;
-	MotorY.imu_reg.Ki = 9.5f;
+	MotorY.imu_reg.Kp = 6.5f;
+	MotorY.imu_reg.Ki = 5.0f;
 	MotorY.imu_reg.Kd = 0.63f;
 }
 
